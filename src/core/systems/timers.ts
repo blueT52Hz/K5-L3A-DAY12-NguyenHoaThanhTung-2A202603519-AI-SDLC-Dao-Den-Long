@@ -1,4 +1,4 @@
-import { SHADE_SPAWN_TICKS } from '../constants';
+import { getNight } from '../nights';
 import type { GameState } from '../types';
 
 /** Sub-step 0: decrement counters first so a counter set at step k lasts exactly its tick count. */
@@ -7,8 +7,8 @@ export function tickTimers(s: GameState): void {
   if (p.invulnTicks > 0) p.invulnTicks -= 1;
   if (p.pulseCooldownTicks > 0) p.pulseCooldownTicks -= 1;
   for (const sh of s.shades) {
-    if (sh.stunTicks > 0) sh.stunTicks -= 1;
-    if (sh.state === 'stunned' && sh.stunTicks === 0) sh.state = 'chase';
+    if (sh.stateTicks > 0) sh.stateTicks -= 1;
+    if (sh.state === 'stunned' && sh.stateTicks === 0) sh.state = 'chase';
   }
   if (s.spawnEnabled && s.spawnTicks > 0) s.spawnTicks -= 1;
 }
@@ -16,6 +16,6 @@ export function tickTimers(s: GameState): void {
 /** True (and timer reset) when the periodic spawn is due. */
 export function spawnDue(s: GameState): boolean {
   if (!s.spawnEnabled || s.spawnTicks > 0) return false;
-  s.spawnTicks = SHADE_SPAWN_TICKS;
+  s.spawnTicks = getNight(s.night).shadeIntervalTicks;
   return true;
 }

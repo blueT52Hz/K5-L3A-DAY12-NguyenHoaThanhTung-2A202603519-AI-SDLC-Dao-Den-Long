@@ -34,7 +34,7 @@ export function step(s: GameState, input: InputFrame): GameEvent[] {
   const jumpEdge = input.jump && !prev.jump;
   const interactEdge = input.interact && !prev.interact;
   const pulseEdge = input.pulse && !prev.pulse;
-  s.prevButtons = { jump: input.jump, interact: input.interact, pulse: input.pulse };
+  s.prevButtons = { jump: input.jump, interact: input.interact, pulse: input.pulse, dash: input.dash, pause: input.pause };
 
   // 2. movement
   movePlayer(s, input, jumpEdge);

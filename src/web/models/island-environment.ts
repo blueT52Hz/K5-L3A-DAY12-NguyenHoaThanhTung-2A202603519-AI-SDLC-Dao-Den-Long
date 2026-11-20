@@ -1,5 +1,7 @@
 import * as THREE from 'three';
-import { ISLAND_RADIUS } from '../../core/constants';
+
+// Night 1 disc radius (src/core/nights/night-1-dao-ben.ts); per-night islands come in the web-shell task.
+const ISLAND_RADIUS = 40;
 
 /** Floating island (top at y=0), cloud sea below, night sky, fog, dim lights. */
 export function createEnvironment(scene: THREE.Scene, boost = false): { setBrightness(litCount: number): void } {

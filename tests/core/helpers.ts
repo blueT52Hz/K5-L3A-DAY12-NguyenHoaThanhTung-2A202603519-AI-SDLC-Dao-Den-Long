@@ -2,7 +2,7 @@ import { step } from '../../src/core/step';
 import type { GameEvent, GameState, InputFrame } from '../../src/core/types';
 
 export function idle(): InputFrame {
-  return { move: [0, 0], cam_yaw_deg: 0, jump: false, interact: false, pulse: false };
+  return { move: [0, 0], cam_yaw_deg: 0, jump: false, interact: false, pulse: false, dash: false, pause: false };
 }
 
 /** Run n steps. inputs: constant partial, array (index per step, last repeats as idle past end), or function of step index. */

@@ -65,5 +65,7 @@ export function readInput(camYawDeg: number): InputFrame {
     jump: held.has('Space'),
     interact: held.has('KeyE'),
     pulse: held.has('KeyF'),
+    dash: false, // wired in the web-shell task
+    pause: false,
   };
 }

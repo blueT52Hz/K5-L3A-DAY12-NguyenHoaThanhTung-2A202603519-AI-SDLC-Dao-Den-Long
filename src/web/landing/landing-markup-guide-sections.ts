@@ -1,13 +1,18 @@
 // Landing page markup, part 2: how-to-play accordion, controls bento, pinned rules, final CTA + footer.
 // All numbers come from game.contract.json (TUNING) or core constants so the guide never drifts from the game.
 import { TUNING } from '../../core/tuning';
-import { INITIAL_SHADES, ISLAND_RADIUS, MAX_SHADES, SHADE_SPAWN_TICKS, TICK_RATE } from '../../core/constants';
+import { SHADE_FIRST_SPAWN_COUNT, TICK_RATE } from '../../core/constants';
+import { getNight } from '../../core/nights';
 import { eyebrow, lineIcon, shell, startButton } from './landing-ui-primitives';
 
 const T = TUNING;
 const S = TUNING.score;
 const MINUTES = Math.round(T.night1_duration_s / 60);
-const SPAWN_S = SHADE_SPAWN_TICKS / TICK_RATE;
+const N1 = getNight(1);
+const SPAWN_S = N1.shadeIntervalTicks / TICK_RATE;
+const INITIAL_SHADES = SHADE_FIRST_SPAWN_COUNT;
+const MAX_SHADES = N1.maxShades;
+const ISLAND_RADIUS = 40; // Night 1 disc radius (night-1-dao-ben.ts)
 
 interface Step { key: string; title: string; body: string; visual: string }
 

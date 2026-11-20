@@ -52,7 +52,7 @@ describe('cli run', () => {
   it('win scenario ends at tick 1 with game_over', () => {
     const sc = file('w.json', {
       player: { pos: [0, 0, 0], carried: 1 }, random_motes: false, random_shades: false,
-      lanterns: [{ id: 'L1', lit: true }, { id: 'L2', lit: true }, { id: 'L3', lit: true }, { id: 'L4', lit: true }, { id: 'L5', deposited: 4, pos: [0, 0, 1] }],
+      lanterns: [{ id: 'L1', lit: true }, { id: 'L2', lit: true }, { id: 'L3', lit: true }, { id: 'L4', lit: true }, { id: 'L5', deposited: 9, pos: [0, 0, 1] }],
     });
     const inp = file('wi.json', { frames: [{ tick: 0, interact: true }] });
     const o = parse(runHeadless(base(['--scenario', sc, '--inputs', inp], '100')).lines);

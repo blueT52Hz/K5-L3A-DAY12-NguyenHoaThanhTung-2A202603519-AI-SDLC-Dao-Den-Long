@@ -1,23 +1,22 @@
-import { INITIAL_SHADES, LANTERN_RING_RADIUS, MOTE_COUNT, SHADE_SPAWN_TICKS, SHADE_Y } from './constants';
+import { SHADE_Y } from './constants';
+import { getNight } from './nights';
 import { distXZ } from './math-xz';
 import { nextRandom } from './rng';
 import { TUNING } from './tuning';
-import type { GameState, Lantern, Mote, Scenario, Shade, Vec3 } from './types';
+import type { GameState, Lantern, Mote, NightId, Scenario, Shade, Vec3 } from './types';
+
+// Interim Phase 1 random defaults (replaced by the spawn-point schedule in a later task).
+const MOTE_COUNT = 40;
+const INITIAL_SHADES = 2;
 
 export class ScenarioError extends Error {}
 
-function defaultLanterns(): Lantern[] {
-  const out: Lantern[] = [];
-  for (let i = 0; i < TUNING.lantern_count_night1; i++) {
-    const a = (i * 72 * Math.PI) / 180;
-    out.push({
-      id: `L${i + 1}`,
-      pos: [LANTERN_RING_RADIUS * Math.sin(a), 0, LANTERN_RING_RADIUS * Math.cos(a)],
-      lit: false,
-      deposited: 0,
-    });
-  }
-  return out;
+function defaultLanterns(night: NightId): Lantern[] {
+  return getNight(night).lanterns.map((l) => ({ id: l.id, pos: [...l.pos] as Vec3, lit: false, deposited: 0 }));
+}
+
+function newShade(id: string, pos: Vec3, state: Shade['state'] = 'chase', stateTicks = 0): Shade {
+  return { id, pos, state, stateTicks, pushTicks: 0, pushDir: [0, 0], heading: [0, 0], headingTicks: 0, evictTicks: 0, evictFrom: null };
 }
 
 /** Highest numeric suffix among ids like M12 / S3. */
@@ -30,15 +29,22 @@ function maxIdNumber(ids: string[]): number {
   return m;
 }
 
-export function createGame(seed: number, scenario: Scenario = {}): GameState {
-  const t0 = scenario.time_left_s ?? TUNING.night1_duration_s;
+export function createGame(seed: number, scenario: Scenario = {}, night: NightId = 1): GameState {
+  const cfg = getNight(night);
+  const t0 = scenario.time_left_s ?? cfg.durationS;
   const s: GameState = {
-    tick: 0, status: 'playing', t0, timeLeftS: t0, score: 0,
-    player: { pos: [0, 0, 0], vy: 0, flames: TUNING.flames, carried: 0, invulnTicks: 0, pulseCooldownTicks: 0 },
-    motes: [], shades: [], lanterns: defaultLanterns(),
-    rngState: seed >>> 0, nextMoteId: 1, nextShadeId: 1,
-    spawnTicks: SHADE_SPAWN_TICKS, spawnEnabled: scenario.random_shades !== false,
-    prevButtons: { jump: false, interact: false, pulse: false },
+    night, tick: 0, simTick: 0, paused: false, status: 'playing', t0, timeLeftS: t0, score: 0,
+    player: {
+      pos: [...cfg.start], vel: [0, 0, 0], vy: 0, grounded: true, facing: [...cfg.startFacing], flames: TUNING.flames, carried: 0,
+      invulnTicks: 0, pulseCooldownTicks: 0, dashTicks: 0, dashCooldownTicks: 0, dashDir: [0, 0],
+      charmTicks: 0, launchVel: null, respawnTicks: 0,
+    },
+    motes: [], shades: [], lanterns: defaultLanterns(night), drifters: [], charms: [],
+    wind: { warning: false, active: false, dirDeg: 0 },
+    rngState: seed >>> 0, nextMoteId: 1, nextShadeId: 1, nextDrifterId: 1,
+    spawnTicks: cfg.shadeIntervalTicks, spawnEnabled: scenario.random_shades !== false,
+    windEnabled: true, drifterSpawnEnabled: true, moteSpawnEnabled: true,
+    prevButtons: { jump: false, interact: false, pulse: false, dash: false, pause: false },
   };
 
   for (const l of scenario.lanterns ?? []) {
@@ -53,13 +59,17 @@ export function createGame(seed: number, scenario: Scenario = {}): GameState {
   if (p?.pos) s.player.pos = [...p.pos];
   if (p?.carried !== undefined) s.player.carried = p.carried;
   if (p?.flames !== undefined) s.player.flames = p.flames;
+  if (p?.invuln_ticks !== undefined) s.player.invulnTicks = p.invuln_ticks;
+  if (p?.dash_cd_ticks !== undefined) s.player.dashCooldownTicks = p.dash_cd_ticks;
+  if (p?.pulse_cd_ticks !== undefined) s.player.pulseCooldownTicks = p.pulse_cd_ticks;
+  if (p?.charm_ticks !== undefined) s.player.charmTicks = p.charm_ticks;
 
   // Defaults are always drawn in the same order so the RNG stream is stable per seed.
   const defMotes = randomMotes(s);
   const defShades = randomShades(s);
 
   const motes: Vec3[] | undefined = scenario.motes ?? (scenario.random_motes === false ? [] : undefined);
-  s.motes = motes ? motes.map((pos, i) => ({ id: `M${i + 1}`, pos: [...pos] as Vec3 })) : defMotes;
+  s.motes = motes ? motes.map((pos, i) => ({ id: `M${i + 1}`, pos: [...pos] as Vec3, kind: 'random' as const, ttlTicks: null })) : defMotes;
   s.nextMoteId = maxIdNumber(s.motes.map((m) => m.id)) + 1;
 
   if (scenario.shades) {
@@ -68,7 +78,7 @@ export function createGame(seed: number, scenario: Scenario = {}): GameState {
     s.shades = scenario.shades.map((x) => {
       let id = x.id;
       if (!id) { while (used.has(`S${n}`)) n++; id = `S${n}`; used.add(id); }
-      return { id, pos: [...x.pos] as Vec3, state: 'chase', stunTicks: 0 };
+      return newShade(id, [...x.pos] as Vec3, x.state ?? 'chase', x.state_ticks_left ?? 0);
     });
   } else {
     s.shades = scenario.random_shades === false ? [] : defShades;
@@ -84,7 +94,7 @@ function randomMotes(s: GameState): Mote[] {
     const a = nextRandom(s) * Math.PI * 2;
     const pos: Vec3 = [r * Math.sin(a), 0, r * Math.cos(a)];
     if (s.lanterns.some((l) => distXZ(l.pos, pos) <= 3)) continue;
-    out.push({ id: `M${out.length + 1}`, pos });
+    out.push({ id: `M${out.length + 1}`, pos, kind: 'random', ttlTicks: null });
   }
   return out;
 }
@@ -93,7 +103,7 @@ function randomShades(s: GameState): Shade[] {
   const out: Shade[] = [];
   for (let i = 0; i < INITIAL_SHADES; i++) {
     const a = nextRandom(s) * Math.PI * 2;
-    out.push({ id: `S${i + 1}`, pos: [35 * Math.sin(a), SHADE_Y, 35 * Math.cos(a)], state: 'chase', stunTicks: 0 });
+    out.push(newShade(`S${i + 1}`, [35 * Math.sin(a), SHADE_Y, 35 * Math.cos(a)]));
   }
   return out;
 }

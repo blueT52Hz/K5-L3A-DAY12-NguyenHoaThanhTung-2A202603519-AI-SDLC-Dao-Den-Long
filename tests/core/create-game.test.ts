@@ -27,7 +27,7 @@ describe('createGame', () => {
     expect(s.lanterns[0].pos[0]).toBeCloseTo(0, 9);
     expect(s.lanterns[0].pos[2]).toBeCloseTo(25, 9);
     expect(s.spawnEnabled).toBe(true);
-    expect(s.spawnTicks).toBe(2700);
+    expect(s.spawnTicks).toBe(480); // interim: Night 1 shade interval
     expect(s.nextMoteId).toBe(41);
     expect(s.nextShadeId).toBe(3);
   });

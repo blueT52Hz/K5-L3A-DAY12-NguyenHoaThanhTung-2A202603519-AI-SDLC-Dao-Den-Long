@@ -48,7 +48,7 @@ describe('movement', () => {
 
 describe('pickup', () => {
   it('picks mote in radius', () => {
-    const s = bare({ motes: [[0, 0, 1.5]] });
+    const s = bare({ motes: [[0, 0, 1]] });
     const ev = run(s, {}, 1);
     expect(ev).toEqual([{ tick: 1, name: 'mote_picked', data: { carried: 1 } }]);
     expect(s.score).toBe(10);
@@ -63,12 +63,12 @@ describe('pickup', () => {
 
 describe('deposit', () => {
   it('deposits and lights', () => {
-    const s = bare({ player: { pos: [0, 0, 23], carried: 7 } });
+    const s = bare({ player: { pos: [0, 0, 23], carried: 10 } });
     const ev = run(s, { interact: true }, 1);
     expect(ev.map((e) => e.name)).toEqual(['deposit', 'lantern_lit']);
-    expect(ev[0].data).toEqual({ lantern_id: 'L1', amount: 5, deposited: 5 });
+    expect(ev[0].data).toEqual({ lantern_id: 'L1', amount: 10, deposited: 10 });
     expect(ev[1].data).toEqual({ lantern_id: 'L1' });
-    expect(s.player.carried).toBe(2);
+    expect(s.player.carried).toBe(0);
     expect(s.score).toBe(100);
     expect(s.lanterns[0].lit).toBe(true);
   });
@@ -83,14 +83,14 @@ describe('deposit', () => {
     const t = bare({ player: { pos: [0, 0, 23], carried: 10 } });
     const ev2 = run(t, { interact: true }, 5);
     expect(ev2.filter((e) => e.name === 'deposit')).toHaveLength(1);
-    expect(t.player.carried).toBe(5);
+    expect(t.player.carried).toBe(0); // cost 10 spent once; held button does not repeat
   });
   it('wins on fifth lantern with time bonus', () => {
     const s = bare({
       player: { pos: [0, 0, 0], carried: 1 },
       lanterns: [
         { id: 'L1', lit: true }, { id: 'L2', lit: true }, { id: 'L3', lit: true }, { id: 'L4', lit: true },
-        { id: 'L5', deposited: 4, pos: [0, 0, 1] },
+        { id: 'L5', deposited: 9, pos: [0, 0, 1] },
       ],
     });
     const ev = run(s, { interact: true }, 1);
@@ -108,7 +108,7 @@ describe('time clamp', () => {
       player: { pos: [0, 0, 0], carried: 1 },
       lanterns: [
         { id: 'L1', lit: true }, { id: 'L2', lit: true }, { id: 'L3', lit: true }, { id: 'L4', lit: true },
-        { id: 'L5', deposited: 4, pos: [0, 0, 1] },
+        { id: 'L5', deposited: 9, pos: [0, 0, 1] },
       ],
     });
     run(s, { interact: true }, 1);

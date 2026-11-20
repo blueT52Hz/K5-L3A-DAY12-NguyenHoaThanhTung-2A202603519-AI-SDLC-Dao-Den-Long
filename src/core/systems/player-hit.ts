@@ -1,8 +1,10 @@
 import { TICK_RATE } from '../constants';
-import { clampToIsland, distXZ } from '../math-xz';
+import { distXZ } from '../math-xz';
+import { getNight } from '../nights';
+import { groundBelow } from '../terrain/terrain-queries';
 import { nextRandom } from '../rng';
 import { TUNING } from '../tuning';
-import type { GameEvent, GameState } from '../types';
+import type { GameEvent, GameState, Vec3 } from '../types';
 
 /** Sub-step 9: first non-stunned shade (by id order) in hit radius hurts the player. Returns true if flames ran out. */
 export function checkHit(s: GameState, events: GameEvent[]): boolean {
@@ -16,8 +18,10 @@ export function checkHit(s: GameState, events: GameEvent[]): boolean {
   for (let i = 0; i < dropped; i++) {
     const r = 2.5 + nextRandom(s) * 1.5;
     const a = nextRandom(s) * Math.PI * 2;
-    const pos = clampToIsland([p.pos[0] + r * Math.sin(a), 0, p.pos[2] + r * Math.cos(a)]);
-    s.motes.push({ id: `M${s.nextMoteId++}`, pos });
+    let pos: Vec3 = [p.pos[0] + r * Math.sin(a), 0, p.pos[2] + r * Math.cos(a)];
+    // Interim: a drop point over void falls back to the player's own spot.
+    if (groundBelow(getNight(s.night), pos[0], pos[2], 0) === null) pos = [p.pos[0], 0, p.pos[2]];
+    s.motes.push({ id: `M${s.nextMoteId++}`, pos, kind: 'dropped', ttlTicks: null });
   }
   p.invulnTicks = Math.round(TUNING.invuln_s * TICK_RATE);
   events.push({ tick: s.tick, name: 'player_hit', data: { by: 'shade', flames: p.flames, dropped } });
