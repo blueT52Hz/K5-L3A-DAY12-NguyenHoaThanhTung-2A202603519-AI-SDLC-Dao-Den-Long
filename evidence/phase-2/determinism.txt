@@ -1,0 +1,3 @@
+night=1 seed=42 ticks=1200: run1 vs run2 byte-identical: YES (258644 bytes)
+night=2 seed=42 ticks=1200: run1 vs run2 byte-identical: YES (261727 bytes)
+night=3 seed=42 ticks=1200: run1 vs run2 byte-identical: YES (284563 bytes)
