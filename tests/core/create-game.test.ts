@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { createGame, ScenarioError } from '../../src/core/create-game';
 import { distXZ } from '../../src/core/math-xz';
+import { getNight } from '../../src/core/nights';
 
 describe('createGame', () => {
   it('is deterministic per seed', () => {
@@ -14,13 +15,12 @@ describe('createGame', () => {
     expect(s.status).toBe('playing');
     expect(s.t0).toBe(300);
     expect(s.player.flames).toBe(3);
-    expect(s.motes).toHaveLength(40);
-    for (const m of s.motes) {
-      const r = distXZ(m.pos, [0, 0, 0]);
-      expect(r).toBeGreaterThanOrEqual(3);
-      expect(r).toBeLessThanOrEqual(38);
-      for (const l of s.lanterns) expect(distXZ(m.pos, l.pos)).toBeGreaterThan(3);
-    }
+    // v1.1: 20 initial motes at distinct Night 1 spawn points (was 40 random-in-disc).
+    expect(s.motes).toHaveLength(20);
+    const pts = getNight(1).moteSpawnPoints;
+    const idx = s.motes.map((m) => pts.findIndex((p) => p.every((v, i) => v === m.pos[i])));
+    expect(idx.every((i) => i >= 0)).toBe(true);
+    expect(new Set(idx).size).toBe(20);
     expect(s.shades.map((x) => x.id)).toEqual(['S1', 'S2']);
     for (const sh of s.shades) expect(distXZ(sh.pos, [0, 0, 0])).toBeCloseTo(35, 9);
     expect(s.lanterns).toHaveLength(5);
@@ -28,7 +28,7 @@ describe('createGame', () => {
     expect(s.lanterns[0].pos[2]).toBeCloseTo(25, 9);
     expect(s.spawnEnabled).toBe(true);
     expect(s.spawnTicks).toBe(480); // interim: Night 1 shade interval
-    expect(s.nextMoteId).toBe(41);
+    expect(s.nextMoteId).toBe(21);
     expect(s.nextShadeId).toBe(3);
   });
 
@@ -37,7 +37,7 @@ describe('createGame', () => {
     expect(s.player.carried).toBe(4);
     expect(s.player.pos).toEqual([1, 0, 2]);
     expect(s.player.flames).toBe(3);
-    expect(s.motes).toHaveLength(40);
+    expect(s.motes).toHaveLength(20);
     expect(s.shades).toHaveLength(2);
   });
 
@@ -46,6 +46,7 @@ describe('createGame', () => {
     expect(s.motes).toHaveLength(0);
     expect(s.shades).toHaveLength(0);
     expect(s.spawnEnabled).toBe(false);
+    expect(s.moteSpawnEnabled).toBe(false);
   });
 
   it('applies shades, lanterns and time', () => {

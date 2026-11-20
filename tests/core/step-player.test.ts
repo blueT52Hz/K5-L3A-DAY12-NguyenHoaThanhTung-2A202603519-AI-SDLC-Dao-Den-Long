@@ -51,7 +51,7 @@ describe('pickup', () => {
     const s = bare({ motes: [[0, 0, 1]] });
     const ev = run(s, {}, 1);
     expect(ev).toEqual([{ tick: 1, name: 'mote_picked', data: { carried: 1 } }]);
-    expect(s.score).toBe(10);
+    expect(s.score).toBe(0); // v1.1: per_mote is scored at deposit, not pickup
     expect(s.motes).toHaveLength(0);
   });
   it('respects capacity', () => {
@@ -69,7 +69,7 @@ describe('deposit', () => {
     expect(ev[0].data).toEqual({ lantern_id: 'L1', amount: 10, deposited: 10 });
     expect(ev[1].data).toEqual({ lantern_id: 'L1' });
     expect(s.player.carried).toBe(0);
-    expect(s.score).toBe(100);
+    expect(s.score).toBe(10 * 10 + 100); // v1.1: per_mote x amount at deposit + per_lantern
     expect(s.lanterns[0].lit).toBe(true);
   });
   it('partial deposit does not light', () => {
@@ -96,7 +96,7 @@ describe('deposit', () => {
     const ev = run(s, { interact: true }, 1);
     expect(ev.map((e) => e.name)).toEqual(['deposit', 'lantern_lit', 'game_over']);
     expect(ev[2]).toEqual({ tick: 1, name: 'game_over', data: { result: 'won', reason: 'all_lit' } });
-    expect(s.score).toBe(100 + 2 * 299 + 50 * 3);
+    expect(s.score).toBe(10 + 100 + 2 * 299 + 50 * 3); // v1.1: +10 per deposited mote
     expect(s.status).toBe('won');
   });
 });
@@ -114,6 +114,6 @@ describe('time clamp', () => {
     run(s, { interact: true }, 1);
     expect(s.status).toBe('won');
     expect(s.timeLeftS).toBe(0);
-    expect(s.score).toBe(100 + 50 * 3);
+    expect(s.score).toBe(10 + 100 + 50 * 3); // v1.1: +10 per deposited mote
   });
 });

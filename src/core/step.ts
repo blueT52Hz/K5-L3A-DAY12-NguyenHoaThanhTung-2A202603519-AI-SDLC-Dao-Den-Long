@@ -1,68 +1,49 @@
 import { TICK_RATE } from './constants';
-import { checkHit } from './systems/player-hit';
-import { usePulse } from './systems/pulse';
-import { moveShades, spawnShade } from './systems/shade-ai';
-import { tickTimers } from './systems/timers';
+import { pickupCharms } from './systems/charms';
+import { drifterSteal, moveDrifters, spawnDrifters } from './systems/drifter-ai';
 import { depositToLantern } from './systems/lantern-deposit';
 import { pickupMotes } from './systems/mote-pickup';
+import { spawnScheduledMote } from './systems/mote-spawner';
+import { computeEdges, handlePause } from './systems/pause-control';
+import { checkFall } from './systems/player-fall-respawn';
+import { checkHit } from './systems/player-hit';
 import { movePlayer } from './systems/player-movement';
-import { TUNING } from './tuning';
+import { usePulse } from './systems/pulse';
+import { moveShades, spawnShades } from './systems/shade-ai';
+import { updateSafeZones } from './systems/shade-zones';
+import { tickTimers } from './systems/timers';
+import { resolveEndOfTick } from './systems/win-lose';
 import type { GameEvent, GameState, InputFrame } from './types';
 
-/** Finish the game. On a win add time and flame bonuses (using the already computed timeLeftS). */
-export function endGame(
-  s: GameState, result: 'won' | 'lost', reason: 'all_lit' | 'dawn' | 'no_flames', events: GameEvent[],
-): void {
-  if (result === 'won') {
-    s.score += TUNING.score.per_second_left * Math.floor(s.timeLeftS) + TUNING.score.per_flame_left * s.player.flames;
-  }
-  s.status = result;
-  events.push({ tick: s.tick, name: 'game_over', data: { result, reason } });
-}
-
-/** One simulation step (tick k -> k+1). Mutates s; follows spec section 7 order. */
+/**
+ * One simulation step (tick k -> k+1). Mutates s. Follows the mandated v1.1 tick order (spec section 9);
+ * step 12 (snapshot) belongs to the caller. A finished game is frozen.
+ */
 export function step(s: GameState, input: InputFrame): GameEvent[] {
   if (s.status !== 'playing') return [];
   const events: GameEvent[] = [];
   s.tick += 1;
-  s.timeLeftS = Math.max(0, s.t0 - s.tick / TICK_RATE); // sub-step 10 value, needed early for the win bonus
-
-  // 0. timers
-  tickTimers(s);
-  // 1. button edges
-  const prev = s.prevButtons;
-  const jumpEdge = input.jump && !prev.jump;
-  const interactEdge = input.interact && !prev.interact;
-  const pulseEdge = input.pulse && !prev.pulse;
-  s.prevButtons = { jump: input.jump, interact: input.interact, pulse: input.pulse, dash: input.dash, pause: input.pause };
-
-  // 2. movement
-  movePlayer(s, input, jumpEdge);
-  // 3. pickup
-  pickupMotes(s, events);
-  // 4. interact
-  if (interactEdge) {
-    depositToLantern(s, events);
-    if (s.lanterns.every((l) => l.lit) && events.some((e) => e.name === 'lantern_lit')) {
-      endGame(s, 'won', 'all_lit', events);
-      return events;
-    }
-  }
-  // 5. pulse
-  if (pulseEdge) usePulse(s, events);
-  // 7. spawn, 8. shade move
-  spawnShade(s, events);
-  moveShades(s);
-  // 9. hit
-  if (checkHit(s, events)) {
-    endGame(s, 'lost', 'no_flames', events);
-    return events;
-  }
-
-  // 10. time
-  if (s.timeLeftS <= 0) {
-    s.timeLeftS = 0;
-    endGame(s, 'lost', 'dawn', events);
-  }
+  // 1. input: pause first (reads prevButtons.pause), then edges (always refreshes prevButtons).
+  const paused = handlePause(s, input, events);
+  const edges = computeEdges(s, input);
+  if (paused) return events;
+  s.simTick += 1;
+  s.timeLeftS = Math.max(0, s.t0 - s.simTick / TICK_RATE);
+  tickTimers(s); // 2
+  movePlayer(s, input, edges); // 3
+  checkFall(s, events);
+  pickupMotes(s, events); // 4
+  pickupCharms(s, events);
+  if (edges.interact) depositToLantern(s, events); // 5
+  updateSafeZones(s); // 6
+  if (edges.pulse) usePulse(s, events); // 7
+  moveShades(s); // 8
+  moveDrifters(s);
+  drifterSteal(s, events); // 9
+  checkHit(s, events);
+  spawnScheduledMote(s); // 10
+  spawnShades(s, events);
+  spawnDrifters(s, events);
+  resolveEndOfTick(s, events); // 11
   return events;
 }

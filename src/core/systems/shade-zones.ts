@@ -4,6 +4,9 @@ import { groundBelow } from '../terrain/terrain-queries';
 import { TUNING } from '../tuning';
 import type { GameState, Vec3 } from '../types';
 
+/** Tick step 6: flag shades inside a just-lit lantern zone as evicting. Filled by Task 5. */
+export function updateSafeZones(_s: GameState): void {}
+
 /**
  * Push a shade out of lit-lantern safe zones. Mutates pos.
  * Interim terrain rule (until the shade rewrite): if the result has no ground at the shade's foot level,

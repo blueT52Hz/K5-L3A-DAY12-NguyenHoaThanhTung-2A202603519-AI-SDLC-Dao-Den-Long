@@ -7,8 +7,8 @@ import type { GameEvent, GameState } from '../types';
 import { clampShade } from './shade-zones';
 import { spawnDue } from './timers';
 
-/** Sub-step 7: periodic spawn at radius 38 (capped at MAX_SHADES). */
-export function spawnShade(s: GameState, events: GameEvent[]): void {
+/** Tick step 10. Interim Phase 1 logic (Task 5 rewrites): periodic spawn at radius 38, capped at maxShades. */
+export function spawnShades(s: GameState, events: GameEvent[]): void {
   if (!spawnDue(s) || s.shades.length >= getNight(s.night).maxShades) return;
   const a = nextRandom(s) * Math.PI * 2;
   const id = `S${s.nextShadeId++}`;

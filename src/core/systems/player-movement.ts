@@ -3,9 +3,10 @@ import { getNight } from '../nights';
 import { groundBelow } from '../terrain/terrain-queries';
 import { TUNING } from '../tuning';
 import type { GameState, InputFrame } from '../types';
+import type { ButtonEdges } from './pause-control';
 
-/** Sub-step 2: rotate move by camera yaw (contract formula), walk (blocked where no ground),  jump physics. */
-export function movePlayer(s: GameState, input: InputFrame, jumpEdge: boolean): void {
+/** Tick step 3: rotate move by camera yaw (contract formula), walk (blocked where no ground),  jump physics. */
+export function movePlayer(s: GameState, input: InputFrame, edges: ButtonEdges): void {
   const p = s.player;
   let [mx, mz] = input.move;
   const len = Math.hypot(mx, mz);
@@ -19,7 +20,7 @@ export function movePlayer(s: GameState, input: InputFrame, jumpEdge: boolean): 
   // Interim (until the movement rewrite): moving into void is blocked.
   if (groundBelow(getNight(s.night), nx, nz, p.pos[1]) !== null) { p.pos[0] = nx; p.pos[2] = nz; }
 
-  if (jumpEdge && p.pos[1] <= 0) p.vy = JUMP_VELOCITY;
+  if (edges.jump && p.pos[1] <= 0) p.vy = JUMP_VELOCITY;
   if (p.vy !== 0 || p.pos[1] > 0) {
     p.vy += GRAVITY / TICK_RATE;
     p.pos[1] += p.vy / TICK_RATE;
