@@ -28,7 +28,7 @@ export function buildIslandDecor(
   const prevFog = scene.fog;
   const prevBackground = scene.background;
 
-  const terrain = buildTerrainLayer(cfg);
+  const terrain = buildTerrainLayer(cfg, low);
   const atmosphere = buildAtmosphereLayer(scene, cfg, low);
   const glow = buildLanternGlowLayer(cfg, seed);
   const props = buildPropsLayer(cfg, seed, low, glow.isLitNear);

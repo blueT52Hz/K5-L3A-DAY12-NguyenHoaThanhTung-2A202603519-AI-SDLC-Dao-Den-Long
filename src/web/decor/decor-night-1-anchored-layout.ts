@@ -16,6 +16,10 @@ export const BOAT_SPOTS: readonly (readonly [number, number, number])[] = [
 export const BOAT_SCALE = 1.8;
 export const NET_POLE_SPOTS: readonly (readonly [number, number])[] = [[-10, -9], [8, -3]];
 export const NET_HALF_SPAN = 1.3;
+/** [x, z, yaw] of thatched huts near the dock (local frame); spots hitting exclusion zones are skipped at build. */
+export const HUT_SPOTS: readonly (readonly [number, number, number])[] = [[6.2, -9.5, 0.3], [-4.2, -13.2, -0.4]];
+/** [x, z] of stacked crates and clay jars (local frame). */
+export const CRATE_SPOTS: readonly (readonly [number, number])[] = [[3.6, -7.0], [-2.6, -10.6]];
 
 /** Local (x,z) to world XZ through the dock anchor (yaw rotation about Y, three.js convention). */
 export function dockLocalToWorld(
@@ -53,5 +57,7 @@ export function nearDockFootprint(cfg: NightConfig, x: number, z: number): boole
   for (let i = 0; i < DOCK_PLANK_COUNT; i += 2) pts.push(dockLocalToWorld(dock, 0, DOCK_PLANK_Z0 + i * DOCK_PLANK_STEP));
   for (const [bx, bz] of BOAT_SPOTS) pts.push(dockLocalToWorld(dock, bx, bz));
   for (const [px, pz] of NET_POLE_SPOTS) pts.push(dockLocalToWorld(dock, px, pz));
+  for (const [hx, hz] of HUT_SPOTS) pts.push(dockLocalToWorld(dock, hx, hz));
+  for (const [cx, cz] of CRATE_SPOTS) pts.push(dockLocalToWorld(dock, cx, cz));
   return pts.some((p) => Math.hypot(x - p[0], z - p[1]) <= ANCHORED_CLEARANCE_M);
 }
