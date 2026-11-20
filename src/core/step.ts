@@ -1,4 +1,8 @@
 import { TICK_RATE } from './constants';
+import { checkHit } from './systems/player-hit';
+import { usePulse } from './systems/pulse';
+import { moveShades, spawnShade } from './systems/shade-ai';
+import { tickTimers } from './systems/timers';
 import { depositToLantern } from './systems/lantern-deposit';
 import { pickupMotes } from './systems/mote-pickup';
 import { movePlayer } from './systems/player-movement';
@@ -23,12 +27,13 @@ export function step(s: GameState, input: InputFrame): GameEvent[] {
   s.tick += 1;
   s.timeLeftS = s.t0 - s.tick / TICK_RATE; // sub-step 10 value, needed early for the win bonus
 
-  // 0. timers (A3: invuln, pulse cooldown, stun, spawn timer)
+  // 0. timers
+  tickTimers(s);
   // 1. button edges
   const prev = s.prevButtons;
   const jumpEdge = input.jump && !prev.jump;
   const interactEdge = input.interact && !prev.interact;
-  // const pulseEdge = input.pulse && !prev.pulse; // A3
+  const pulseEdge = input.pulse && !prev.pulse;
   s.prevButtons = { jump: input.jump, interact: input.interact, pulse: input.pulse };
 
   // 2. movement
@@ -43,7 +48,16 @@ export function step(s: GameState, input: InputFrame): GameEvent[] {
       return events;
     }
   }
-  // 5. pulse, 7. shade spawn, 8. shade move, 9. hit: A3
+  // 5. pulse
+  if (pulseEdge) usePulse(s, events);
+  // 7. spawn, 8. shade move
+  spawnShade(s, events);
+  moveShades(s);
+  // 9. hit
+  if (checkHit(s, events)) {
+    endGame(s, 'lost', 'no_flames', events);
+    return events;
+  }
 
   // 10. time
   if (s.timeLeftS <= 0) {
