@@ -25,7 +25,7 @@ export function step(s: GameState, input: InputFrame): GameEvent[] {
   if (s.status !== 'playing') return [];
   const events: GameEvent[] = [];
   s.tick += 1;
-  s.timeLeftS = s.t0 - s.tick / TICK_RATE; // sub-step 10 value, needed early for the win bonus
+  s.timeLeftS = Math.max(0, s.t0 - s.tick / TICK_RATE); // sub-step 10 value, needed early for the win bonus
 
   // 0. timers
   tickTimers(s);

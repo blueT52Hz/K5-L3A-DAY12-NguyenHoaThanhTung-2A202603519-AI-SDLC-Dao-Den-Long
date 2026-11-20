@@ -100,3 +100,20 @@ describe('deposit', () => {
     expect(s.status).toBe('won');
   });
 });
+
+describe('time clamp', () => {
+  it('win with tiny time left gives no negative bonus', () => {
+    const s = bare({
+      time_left_s: 0.01,
+      player: { pos: [0, 0, 0], carried: 1 },
+      lanterns: [
+        { id: 'L1', lit: true }, { id: 'L2', lit: true }, { id: 'L3', lit: true }, { id: 'L4', lit: true },
+        { id: 'L5', deposited: 4, pos: [0, 0, 1] },
+      ],
+    });
+    run(s, { interact: true }, 1);
+    expect(s.status).toBe('won');
+    expect(s.timeLeftS).toBe(0);
+    expect(s.score).toBe(100 + 50 * 3);
+  });
+});
