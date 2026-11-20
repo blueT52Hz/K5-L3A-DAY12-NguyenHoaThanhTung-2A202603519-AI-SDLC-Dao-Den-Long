@@ -1,22 +1,26 @@
-# Bang chung demo trang tri dao (Dem 1)
+# Bang chung demo trang tri dao (Dem 1) - ban nang cap hinh anh
 
 ## Cach mo demo
 `npm run dev` roi mo http://localhost:5173/decor-demo.html?lit=5
-(`lit` = so den long da sang, 0 den 5; co the keo thanh truot trong bang dieu khien).
+- `lit` = so den long da sang (0..5).
+- `cam=overview|dock|trees` = goc may quay dat san (mac dinh overview).
+- `bloom=0` = tat UnrealBloomPass (render thang, van ACES + sRGB).
 
-## Anh chup (1280x720, Dem 1)
-- `night1-lit0.png` (`?lit=0`): troi dem co sao va trang trong khung hinh, dao toi voi co xanh duc, vien cat am, suong mo tham duoi vien dao (khong con o chu nhat), cau tau go va thuyen thung (da phong to) o ben trai, den long tat (khong co vong sang).
-- `night1-lit5.png` (`?lit=5`): cung canh, 5 den long sang voi vong sang vang quanh moi den, co quanh den chuyen sang xanh la.
-- Keo thanh truot ve 0 sau khi `lit=5`: vong sang va co tat het (da kiem tra, anh tam).
+## Thay doi chinh
+- Dia hinh: mat co nhap nho (nhieu sin, toi da ~0.24 m, phang trong 3 m quanh den/diem xuat phat), mau co bien thien theo dinh, vien cat doc xuong mep, vach da nhieu tang (flatShading), re cay treo va da troi duoi dao.
+- Cay coi: dua/cau than cong co dot, 9 la kep ru; bui tre co dot va chum la; cay tan tron 5 khoi la 3 tong xanh, day toi; bui duoi goc cay; cum hoa nhieu mau; tuft co 5 la gradient. Co lac nhe theo gio (update).
+- Lang chai: cau tau go (van lech mau, dam, coc, lan can day thung), cong tre treo den giay do, thuyen thung dan (Lathe, vanh dam), luoi tren khung tre, 2 nha tranh co cua so am, thung go va chum sanh.
+- Khi quyen: bau troi gradient, sao lap lanh, trang tron (billboard) co quang, bien may khoi phong nhap nho, dom dom (Points + additive shader).
+- Demo: ACES + sRGB + UnrealBloomPass (EffectComposer) + resize; khung may moi.
 
-Pham vi tam thoi: chi Dem 1 (CLI headless hien chi ho tro `--night 1`).
+## Anh chup (1280x720)
+- `night1-lit0.png` (`?lit=0&bloom=0`): dao toi, chi cau tau va nha tranh am.
+- `night1-lit5.png` (`?lit=5&bloom=0`): 5 den sang, co quanh den am.
+- `night1-dock-closeup.png` (`?lit=5&bloom=0&cam=dock`): can canh cau tau, thuyen thung, luoi, nha, chum.
+- `night1-lit5-bloom.png` (`?lit=5`, bloom bat): xem ghi chu ben duoi.
 
-## FPS
-- lit=0: 61 FPS; lit=5: 61 FPS (doc tu phan tu `#fps` sau ~5 s).
-- Do trong trinh duyet headless/automation (chrome-devtools), co the khac tren may that.
-- Console: khong co thong bao nao.
+Ghi chu: trinh duyet automation dung de chup (GPU bao "Adreno 612" qua ANGLE) render moi render-target bi lech/ho vuong (ca khi chi co RenderPass + OutputPass), nen anh co bloom co vet soc va khoi vuong. Ma bloom dung chuan three r170; can kiem tra lai tren may that. Anh chinh chup voi `bloom=0`.
 
-## Kiem tra khong anh huong
-- Headless: `node dist-headless/headless.mjs --seed 1 --night 1 --ticks 3600` sau `npm run build`, so voi baseline truoc Task 1: `diff` rong (giong het, 76 dong). Dem 2/3: CLI tu choi (`only --night 1 is supported`), bo qua.
-- `git diff --stat 9292267..HEAD --diff-filter=M`: rong (khong sua file cu). `--diff-filter=D`: rong.
-- `npm test`: 21 file, 125 test, tat ca PASS.
+## FPS (#fps, sau ~5 s)
+- lit=0, bloom=0: 61 FPS; lit=5, bloom=0: 61 FPS; lit=5 bloom bat: ~47 FPS.
+- Console: khong co loi.
