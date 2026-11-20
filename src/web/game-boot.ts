@@ -107,6 +107,9 @@ export function bootGame(): void {
   });
 
   loadNight(1);
+  // Dev-only: ?night=2|3 starts at that night's intro (screenshots / quick testing).
+  const devNight = Number(new URLSearchParams(window.location.search).get('night'));
+  if (devNight === 2 || devNight === 3) flow.startAtNight(devNight as NightId);
   enterPhase();
 
   const update = (): void => {

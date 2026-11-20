@@ -153,3 +153,5 @@ Cách thủ công: mở Chrome với `--use-angle=swiftshader --enable-unsafe-sw
 ## macOS / Linux
 
 Toàn bộ là Node thuần (>= 20) và Vite; không cần biên dịch native vì lockfile chứa binary prebuilt cho linux/darwin, đường dẫn dùng `node:path`. Mới chỉ kiểm trên Windows qua Git Bash, từ bản sao sạch: `npm ci && npm run build && node dist-headless/headless.mjs ...` (xem `docs/ai-log.md`). Chưa chạy trên macOS/Linux thật.
+
+Dev: `?play=1&night=2` (hoặc `night=3`) vào thẳng màn giới thiệu của Đêm đó; `scripts/measure-fps-and-screenshots.mjs` đo FPS và chụp ảnh bằng Playwright (`evidence/phase-2/`).

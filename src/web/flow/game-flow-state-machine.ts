@@ -24,6 +24,12 @@ export class GameFlow {
     this.phase = { kind: 'intro', night: 1 };
   }
 
+  /** Dev-only (?night=N): jump straight to intro of night n. */
+  startAtNight(n: NightId): void {
+    this.wonScores = {};
+    this.phase = { kind: 'intro', night: n };
+  }
+
   /** Intro screen dismissed: start playing the night. */
   beginNight(): void {
     if (this.phase.kind === 'intro') this.phase = { kind: 'playing', night: this.phase.night };
