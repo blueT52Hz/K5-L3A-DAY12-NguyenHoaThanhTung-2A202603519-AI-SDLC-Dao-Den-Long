@@ -37,32 +37,61 @@ function main(): void {
   };
 
   let handle: IslandDecorHandle | null = null;
-  let models: THREE.Group[] = [];
+  let models: Array<{ group: THREE.Group; setLit(lit: boolean): void }> = [];
 
-  /** Rebuild decor + reference lanterns, then re-apply layer toggles and lit count. */
-  function rebuild(): void {
-    handle?.dispose();
-    models.forEach((g) => scene.remove(g));
-    models = [];
-    handle = buildIslandDecor(scene, NIGHT);
+  /** Free GPU resources of a reference lantern (geometry + material, array-safe). */
+  function disposeModel(g: THREE.Group): void {
+    scene.remove(g);
+    g.traverse((o) => {
+      const mesh = o as THREE.Mesh;
+      if (mesh.geometry) mesh.geometry.dispose();
+      const mat = mesh.material as THREE.Material | THREE.Material[] | undefined;
+      if (Array.isArray(mat)) mat.forEach((x) => x.dispose());
+      else if (mat) mat.dispose();
+    });
+  }
+
+  /** Light the first `state.lit` lanterns (id order) on models and decor handle. No rebuild. */
+  function applyLit(): void {
     const litIds: string[] = [];
     cfg.lanterns.forEach((l, i) => {
+      const on = i < state.lit;
+      models[i].setLit(on);
+      if (on) litIds.push(l.id);
+    });
+    handle?.setLitLanterns(litIds);
+  }
+
+  function applyLayers(): void {
+    (Object.keys(state.layers) as DecorLayer[]).forEach((k) => handle?.setLayerVisible(k, state.layers[k]));
+  }
+
+  /** Full dispose + rebuild (night change path only), then re-apply layers + lit count. */
+  function rebuild(): void {
+    handle?.dispose();
+    models.forEach((m) => disposeModel(m.group));
+    models = [];
+    handle = buildIslandDecor(scene, NIGHT);
+    cfg.lanterns.forEach((l) => {
       const m = createLanternModel(false);
       m.group.position.set(l.pos[0], l.pos[1], l.pos[2]);
-      const on = i < state.lit;
-      m.setLit(on);
-      if (on) litIds.push(l.id);
       scene.add(m.group);
-      models.push(m.group);
+      models.push(m);
     });
-    handle.setLitLanterns(litIds);
-    (Object.keys(state.layers) as DecorLayer[]).forEach((k) => handle!.setLayerVisible(k, state.layers[k]));
+    applyLit();
+    applyLayers();
   }
   rebuild();
 
   createControlPanel(
     document.getElementById('panel') as HTMLElement, { night: NIGHT, lit: state.lit },
-    (s) => { state.lit = s.lit; state.layers = { ...s.layers }; rebuild(); },
+    (s) => {
+      state.lit = s.lit;
+      state.layers = { ...s.layers };
+      if (s.night !== state.night) { rebuild(); return; } // hidden: demo is Night 1 only
+      applyLit();
+      applyLayers();
+    },
   );
 
   window.addEventListener('resize', () => {
