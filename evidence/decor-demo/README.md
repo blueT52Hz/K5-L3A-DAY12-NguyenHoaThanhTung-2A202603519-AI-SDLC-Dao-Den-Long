@@ -1,4 +1,4 @@
-# Bang chung demo trang tri dao (Dem 1) - ban nang cap hinh anh
+# Bang chung demo trang tri dao (Dem 1-3) - ban nang cap hinh anh
 
 ## Cach mo demo
 `npm run dev` roi mo http://localhost:5173/decor-demo.html?lit=5
@@ -24,3 +24,16 @@ Ghi chu: trinh duyet automation dung de chup (GPU bao "Adreno 612" qua ANGLE) re
 ## FPS (#fps, sau ~5 s)
 - lit=0, bloom=0: 61 FPS; lit=5, bloom=0: 61 FPS; lit=5 bloom bat: ~47 FPS.
 - Console: khong co loi.
+
+## Dem 2, Dem 3 va nhan vat (cap nhat)
+Mo: `?night=1|2|3&lit=N|max` (vd `?night=2&lit=max&bloom=0`). Nut "Dem 1/2/3" dung lai toan bo (decor + den + nhan vat + goc may). O "Nhan vat" bat/tat May.
+- Camera: `cam=overview` (moi dem), Dem 2 `cam=bridge|village`, Dem 3 `cam=temple|banyan`, moi dem `cam=follow` (bam theo May).
+- Dia hinh chung cho moi dem, dung theo cfg.surfaces: mat co + vien cat cho moi dia goc, vach da nhieu tang theo ban kinh; Dem 3: mat tang co vien lat da, tuong da xep vien op, bac da tren 2 doc; Dem 2: cau tre (ong tre ngang, dam, day buoc).
+- Dem 2 "Dao Cau": hang cau 2 vong ngoai moi dao (1/3 than co day trau), cot tre + den giay do treo 2 ben cau (z = +-2.3, paperLanternPositions) + lan can + day den nho, gieng lang + chum nuoc, ao sen (la, hoa), co/hoa/tre/cay/bui chung, dom dom tren ca hai dao.
+- Dem 3 "Dao Chuong": thap chuong (be da bat giac, 4 cot son do, 2 tang mai cong kieu dinh, dau dao vang, chuong dong dung dua), cay da lon re phu o tang 0 (z < 0), phuon tren 3 tang lay theo gio (gio manh), 4 lu huong o chan 2 doc, cay coi chung.
+- Khi quyen can giua theo cac dia cua dem (may, suong, dom dom, bau troi, fog).
+- May: di vong (Dem 1 vong cu; Dem 2 r 14 quanh dao A; Dem 3 r 32.8 tren tang 0, tranh den va doc), chan theo do cao dia hinh.
+
+Anh: `night2-lit6.png` (`?night=2&lit=max&bloom=0`), `night3-lit7.png` (`?night=3&lit=max&bloom=0`), `night1-character.png` (`?night=1&lit=max&bloom=0&cam=follow`).
+
+FPS (1280x720, sau ~5 s, overview, lit=max): Dem 1 ~60 / Dem 2 ~45 / Dem 3 ~50 (bloom=0); bloom bat: ~46 / ~39 / ~47. Console: khong co loi.
