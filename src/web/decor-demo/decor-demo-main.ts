@@ -24,9 +24,9 @@ function main(): void {
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 400);
-  camera.position.set(0, 30, 45);
+  camera.position.set(0, 16, 62);
   const controls = new OrbitControls(camera, canvas);
-  controls.target.set(0, 0, 0);
+  controls.target.set(0, 2, 0);
   controls.update();
 
   const cfg = getNight(NIGHT);
@@ -103,13 +103,14 @@ function main(): void {
   // Sliding 1 s FPS average.
   const stamps: number[] = [];
   let last = performance.now();
+  let shownFps = -1;
   function frame(now: number): void {
     requestAnimationFrame(frame);
     const dt = Math.min((now - last) / 1000, 0.1);
     last = now;
     stamps.push(now);
     while (stamps.length && now - stamps[0] > 1000) stamps.shift();
-    fpsEl.textContent = `${stamps.length} FPS`;
+    if (stamps.length !== shownFps) { shownFps = stamps.length; fpsEl.textContent = `${shownFps} FPS`; }
     handle?.update(dt);
     controls.update();
     renderer.render(scene, camera);

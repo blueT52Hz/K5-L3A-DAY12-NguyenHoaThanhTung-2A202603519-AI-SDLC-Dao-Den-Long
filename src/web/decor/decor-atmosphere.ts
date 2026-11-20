@@ -12,6 +12,12 @@ export function ambientIntensityFor(lit: number, total: number): number {
 
 const MIST_COUNT = 6;
 const MIST_SPEED = 0.03; // rad/s
+const STAR_RADIUS_M = 250; // inside the camera far plane (game 300, demo 400)
+const MOON_POS: [number, number, number] = [-110, 85, -200];
+
+// Soft radial falloff for mist discs; ShaderMaterial so it builds without a DOM canvas.
+const MIST_VERT = 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }';
+const MIST_FRAG = 'uniform vec3 uColor; uniform float uAlpha; varying vec2 vUv; void main(){ float d = distance(vUv, vec2(0.5)) * 2.0; float a = 1.0 - smoothstep(0.0, 1.0, d); gl_FragColor = vec4(uColor, a * a * uAlpha); }';
 
 export interface AtmosphereHandle {
   group: THREE.Group;
@@ -26,7 +32,7 @@ function buildStars(count: number): THREE.Points {
     // Upper hemisphere, far away (fog disabled on the material).
     const u = rnd() * Math.PI * 2;
     const v = 0.08 + rnd() * 0.92;
-    const r = 420;
+    const r = STAR_RADIUS_M;
     const s = Math.sqrt(1 - v * v);
     pos[i * 3] = Math.cos(u) * s * r;
     pos[i * 3 + 1] = v * r;
@@ -34,7 +40,7 @@ function buildStars(count: number): THREE.Points {
   }
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  const mat = new THREE.PointsMaterial({ color: 0xffffff, size: 2, sizeAttenuation: false, fog: false });
+  const mat = new THREE.PointsMaterial({ color: 0xffffff, size: 3, sizeAttenuation: false, fog: false });
   return new THREE.Points(geo, mat);
 }
 
@@ -51,13 +57,15 @@ export function buildAtmosphereLayer(scene: THREE.Scene, cfg: NightConfig, lowQu
     new THREE.SphereGeometry(14, 20, 14),
     new THREE.MeshBasicMaterial({ color: 0xfff4d6, fog: false }),
   );
-  moon.position.set(-160, 190, -300);
+  moon.position.set(...MOON_POS);
   group.add(moon);
 
-  // Mist: translucent planes on pivots around the island rim; pivots rotate slowly.
-  const mistGeo = new THREE.PlaneGeometry(38, 9);
-  const mistMat = new THREE.MeshBasicMaterial({
-    color: P.mist, transparent: true, opacity: 0.35, side: THREE.DoubleSide, depthWrite: false,
+  // Mist: soft horizontal discs drifting below the island rim on slowly rotating pivots.
+  const mistGeo = new THREE.PlaneGeometry(40, 40);
+  const mistMat = new THREE.ShaderMaterial({
+    uniforms: { uColor: { value: new THREE.Color(P.mist) }, uAlpha: { value: 0.2 } },
+    vertexShader: MIST_VERT, fragmentShader: MIST_FRAG,
+    transparent: true, depthWrite: false, side: THREE.DoubleSide,
   });
   const pivots: THREE.Group[] = [];
   const rnd = mulberry32(5150 + cfg.id);
@@ -66,23 +74,24 @@ export function buildAtmosphereLayer(scene: THREE.Scene, cfg: NightConfig, lowQu
     const pivot = new THREE.Group();
     pivot.rotation.y = (i / count) * Math.PI * 2 + rnd();
     const plane = new THREE.Mesh(mistGeo, mistMat);
-    plane.position.set(46 + rnd() * 10, -2 + rnd() * 4, 0);
-    plane.rotation.y = Math.PI / 2;
+    plane.position.set(38 + rnd() * 12, -6 - rnd() * 8, 0);
+    plane.rotation.x = -Math.PI / 2;
     pivot.add(plane);
     group.add(pivot);
     pivots.push(pivot);
   }
 
-  const ambient = new THREE.AmbientLight(0x8fa0d8, ambientIntensityFor(0, 1));
-  const hemi = new THREE.HemisphereLight(0x6f86c8, P.grass, ambientIntensityFor(0, 1) * 0.5);
-  group.add(ambient, hemi);
+  // Three 0.170 uses physical units: scale the formula by PI so ambient 0.70 reads as ~0.7x albedo.
+  const ambient = new THREE.AmbientLight(0xdfe4ff, ambientIntensityFor(0, 1) * Math.PI);
+  // One fixed moonlight, no shadow, from the moon direction.
+  const moonLight = new THREE.DirectionalLight(0xc9d2ff, 1.0);
+  moonLight.position.set(...MOON_POS);
+  group.add(ambient, moonLight);
 
   return {
     group,
     setLitRatio(r: number) {
-      const v = ambientIntensityFor(r, 1);
-      ambient.intensity = v;
-      hemi.intensity = v * 0.5;
+      ambient.intensity = ambientIntensityFor(r, 1) * Math.PI;
     },
     update(dtS: number) {
       for (let i = 0; i < pivots.length; i++) pivots[i].rotation.y += MIST_SPEED * dtS * (i % 2 ? 1 : -0.7);
