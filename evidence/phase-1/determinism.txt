@@ -1,0 +1,4 @@
+seed=42 night=1 ticks=1200, chay 2 lan
+default-seed42-run1.jsonl vs default-seed42-run2.jsonl
+byte-identical: YES
+size: 158278 bytes
