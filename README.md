@@ -134,6 +134,8 @@ Mục 5-8 và FPS (>= 30 ở 1280x720) thuộc bản web, được kiểm riêng
 - Landing page có hướng dẫn chơi (cách chơi, điều khiển, tính điểm, luật), game chỉ tải sau khi bấm Bắt đầu (từ Phase 1).
 - Phase 1: Mây đội nón lá treo đèn lồng, Bóng Mực khối tím, đảo sáng dần khi thắp đèn (low-poly dựng từ khối cơ bản).
 - Phase 2: bộ scenario headless riêng cho từng tính năng và script sinh bằng chứng (`scripts/generate-evidence-phase-2.mjs`), skill dự án `dao-den-long-contract` để agent giữ đúng luật contract khi mở rộng.
+- Đồ họa đảo mới trong game (`src/web/decor/`): mỗi Đêm có địa hình stylized khớp đúng mặt đi của gameplay (cỏ, bãi cát, vách đá treo, bậc tầng, cầu tre), bầu trời trăng sao, biển mây, sương, đom đóm và đạo cụ riêng (làng chài Đêm 1, đảo cau Đêm 2, gác chuông Đêm 3). Ánh sáng vẫn theo công thức 0.15 + 0.55 x đèn sáng/tổng. Mây là nhân vật có khớp: tay chân vung theo tốc độ thật của người chơi (lướt nhanh hơn, đứng yên thì thở nhẹ), đèn trên nón và khăn lắc theo quán tính. Không bloom trong game để giữ FPS (khoảng 35-38 FPS ở 1280x720 trên máy dev). Ảnh: `evidence/decor-demo/game-night1.png`, `game-night2.png`, `game-night3.png`.
+- Chỉ đổi phần hiển thị: output headless giữ nguyên, `diff` JSONL `--seed 1 --ticks 3600` trước/sau tích hợp trùng khớp cả 3 Đêm (`.superpowers/sdd/2026-11-20-island-decor-demo/integration-baseline/` và `integration-after/`).
 
 ## Bằng chứng
 
