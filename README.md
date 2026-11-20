@@ -8,7 +8,7 @@ Các tài liệu đề lab (README, GUIDE, RUBRIC, RULES, CHECKPOINTS, SUBMISSIO
 
 ## Cài đặt và chạy (3 lệnh)
 
-Yêu cầu Node >= 20 (Windows, macOS, Linux; không có dependency native).
+Yêu cầu Node >= 20 (không cần biên dịch native; binary prebuilt cho linux/darwin/win32 đã có trong `package-lock.json`).
 
 ```
 npm ci
@@ -102,4 +102,4 @@ Phase 1 chưa có phần sáng tạo riêng ngoài hình ảnh cơ bản của l
 
 ## macOS / Linux
 
-Toàn bộ là Node thuần (>= 20) và Vite, không dependency native, đường dẫn dùng `node:path`. Đã chạy thử `npm ci && npm run build && node dist-headless/headless.mjs ...` trên bản sao sạch (xem `docs/ai-log.md`).
+Toàn bộ là Node thuần (>= 20) và Vite; không cần biên dịch native vì lockfile chứa binary prebuilt cho linux/darwin, đường dẫn dùng `node:path`. Mới chỉ kiểm trên Windows qua Git Bash, từ bản sao sạch: `npm ci && npm run build && node dist-headless/headless.mjs ...` (xem `docs/ai-log.md`). Chưa chạy trên macOS/Linux thật.

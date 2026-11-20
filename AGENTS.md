@@ -27,4 +27,4 @@ Dự án dựng bằng Claude Code với bộ skill `superpowers`. Chủ dự á
 - Plan: `docs/superpowers/plans/`
 - Sổ SDD và báo cáo từng task: `docs/ai-process/phase-1/` (progress.md, task-*-report.md, review-*.md)
 - Nhật ký AI và giả định: `docs/ai-log.md`
-- Harness: `CLAUDE.md` và `.claude/rules/*.md` (đã loại cấu hình cá nhân, hook, skill, khóa/token).
+- Harness: `CLAUDE.md`, `.claude/rules/*.md` và hook Stop thật (`.claude/settings.json` + `.claude/hooks/run-tests-before-stop.sh`: chạy `npm test`, chặn kết thúc khi test đỏ). Đã loại cấu hình cá nhân và khóa/token. Skill đã dùng là skill superpowers toàn cục, không vendor trong repo.
