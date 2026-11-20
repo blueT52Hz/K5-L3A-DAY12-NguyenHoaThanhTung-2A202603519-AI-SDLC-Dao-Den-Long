@@ -7,9 +7,9 @@ export const DECOR_PALETTE = {
   wood: 0x6b4a2f,
   cloudSea: 0x12384a,
   lanternLit: 0xffb347,
-  lanternCore: 0xfff1c9,
-  lanternOff: 0x3a3228,
-  moteCore: 0xfff6d0,
+  lanternCore: 0xffe9b0,
+  lanternOff: 0x5b5f6e,
+  moteCore: 0xfff6c2,
   moteGlow: 0xffe58a,
   gold: 0xf2c14e,
   // prop-specific

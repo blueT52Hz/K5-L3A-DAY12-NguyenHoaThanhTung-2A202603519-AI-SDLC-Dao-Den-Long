@@ -17,8 +17,13 @@ describe('seeded random + palette', () => {
     expect(DECOR_PALETTE.lanternLit).toBe(0xffb347); expect(DECOR_PALETTE.moteGlow).toBe(0xffe58a);
     expect(DECOR_PALETTE.gold).toBe(0xf2c14e);
   });
+  it('exact lantern and mote core colors', () => {
+    expect(DECOR_PALETTE.lanternCore).toBe(0xffe9b0);
+    expect(DECOR_PALETTE.lanternOff).toBe(0x5b5f6e);
+    expect(DECOR_PALETTE.moteCore).toBe(0xfff6c2);
+  });
   it('has prop colors and all values are numbers', () => {
-    for (const k of ['stone','roofTile','bronze','arecaLeaf','arecaTrunk','paperLantern','lanternCore','lanternOff','moteCore'] as const)
+    for (const k of ['stone','roofTile','bronze','arecaLeaf','arecaTrunk','paperLantern'] as const)
       expect(typeof DECOR_PALETTE[k]).toBe('number');
   });
 });
