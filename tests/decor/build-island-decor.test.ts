@@ -10,7 +10,20 @@ describe('buildIslandDecor', () => {
       const h = buildIslandDecor(scene, id);
       expect(scene.children.length).toBeGreaterThan(before);
       expect(scene.fog).not.toBeNull();
+      const disposed = new Set<unknown>();
+      const track = (r: THREE.BufferGeometry | THREE.Material) => r.addEventListener('dispose', () => disposed.add(r));
+      const resources = new Set<THREE.BufferGeometry | THREE.Material>();
+      scene.traverse((o) => {
+        const mesh = o as THREE.Mesh;
+        if (mesh.geometry) resources.add(mesh.geometry);
+        const mat = mesh.material as THREE.Material | THREE.Material[] | undefined;
+        if (Array.isArray(mat)) mat.forEach((x) => resources.add(x));
+        else if (mat) resources.add(mat);
+      });
+      resources.forEach(track);
+      expect(resources.size).toBeGreaterThan(0);
       h.dispose();
+      for (const r of resources) expect(disposed.has(r)).toBe(true);
       expect(scene.children.length).toBe(before);
       expect(scene.fog).toBeNull();
       expect(scene.background).toBeNull();
