@@ -38,6 +38,7 @@ node dist-headless/headless.mjs --seed 42 --night 1 --ticks 1200 --out out/run.j
 | E | Nạp đom đóm vào đèn gần nhất chưa sáng (trong 3m) |
 | F | Tỏa sáng (pulse): choáng và đẩy Bóng Mực trong 6m, tốn 1 đom đóm |
 | Kéo chuột / phím mũi tên trái-phải | Xoay camera (yaw đưa vào `cam_yaw_deg`) |
+| P / Esc | Tạm dừng / tiếp tục (hiện hướng dẫn mục tiêu, phím và cách tính điểm) |
 | R | Chơi lại (ở màn kết thúc) |
 
 ## Luật chơi tóm tắt

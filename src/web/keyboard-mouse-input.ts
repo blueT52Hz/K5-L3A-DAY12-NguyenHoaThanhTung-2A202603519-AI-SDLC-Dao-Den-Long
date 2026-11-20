@@ -1,4 +1,5 @@
 import type { InputFrame } from '../core/types';
+import { isPaused } from './pause-overlay';
 
 const held = new Set<string>();
 let yawDeg = 0;
@@ -7,8 +8,16 @@ let restartRequested = false;
 const YAW_KEY_SPEED_DEG_S = 120;
 const YAW_MOUSE_DEG_PER_PX = 0.3;
 
+/** Drop all held keys and drag state (called when pausing so nothing sticks). */
+export function clearInput(): void {
+  held.clear();
+  dragging = false;
+  restartRequested = false;
+}
+
 export function initInput(target: HTMLElement): void {
   window.addEventListener('keydown', (e) => {
+    if (isPaused()) return; // only P/Esc (handled by pause overlay) act while paused
     const k = e.code;
     if (k === 'KeyR' && !e.repeat) restartRequested = true;
     if (['Space', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(k)) e.preventDefault();
@@ -16,10 +25,10 @@ export function initInput(target: HTMLElement): void {
   });
   window.addEventListener('keyup', (e) => held.delete(e.code));
   window.addEventListener('blur', () => held.clear());
-  target.addEventListener('mousedown', () => { dragging = true; });
+  target.addEventListener('mousedown', () => { if (!isPaused()) dragging = true; });
   window.addEventListener('mouseup', () => { dragging = false; });
   window.addEventListener('mousemove', (e) => {
-    if (dragging) yawDeg -= e.movementX * YAW_MOUSE_DEG_PER_PX;
+    if (dragging && !isPaused()) yawDeg -= e.movementX * YAW_MOUSE_DEG_PER_PX;
   });
 }
 

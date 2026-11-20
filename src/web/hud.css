@@ -13,3 +13,15 @@
 #hud .overlay button:hover { background: #55307a; }
 body { margin: 0; overflow: hidden; background: #140824; }
 canvas { display: block; }
+#hud .pause-btn { position: fixed; top: 12px; right: 16px; pointer-events: auto; font-size: 16px; font-weight: 600;
+  padding: 6px 14px; border-radius: 8px; border: 1px solid #ff9a3c; background: rgba(30, 14, 46, 0.78);
+  color: #ffb35c; cursor: pointer; text-shadow: 0 0 6px rgba(255, 140, 40, 0.5); }
+#hud .pause-btn:hover { background: #55307a; }
+#hud .overlay.pause { z-index: 5; }
+#hud .pause .panel { max-width: 560px; padding: 24px 32px; border: 2px solid #ff9a3c; border-radius: 14px;
+  background: rgba(30, 14, 46, 0.92); color: #ffd9a8; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+#hud .pause .panel h1 { font-size: 40px; }
+#hud .pause .panel p { margin: 0; font-size: 15px; line-height: 1.4; text-align: left; align-self: stretch; }
+#hud .pause table { border-collapse: collapse; align-self: stretch; font-size: 15px; }
+#hud .pause td { padding: 3px 8px; border-bottom: 1px solid rgba(255, 154, 60, 0.25); }
+#hud .pause td:first-child { color: #ffb35c; font-weight: 600; white-space: nowrap; }

@@ -39,6 +39,11 @@ export class SceneSync {
     this.sync(state);
   }
 
+  /** Visual-only heading of the player model (rad about Y; 0 faces +Z). */
+  setPlayerFacing(rad: number): void {
+    this.player.rotation.y = rad;
+  }
+
   sync(state: GameState): void {
     this.player.position.set(...state.player.pos);
     this.player.visible = !(state.player.invulnTicks > 0 && state.tick % 8 < 4); // blink when hit

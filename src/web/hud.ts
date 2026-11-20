@@ -21,7 +21,7 @@ export function initHud(root: HTMLElement, onRestart: () => void): void {
       <div class="chip" data-k="lantern"></div><div class="chip" data-k="time"></div>
       <div class="chip" data-k="score"></div>
     </div>
-    <div class="hint">WASD đi - Space nhảy - E nạp đèn - F tỏa sáng - kéo chuột hoặc phím mũi tên xoay camera</div>
+    <div class="hint">WASD đi - Space nhảy - E nạp đèn - F tỏa sáng - kéo chuột hoặc phím mũi tên xoay camera - P/Esc tạm dừng</div>
     <div class="overlay" data-k="over"><h1 data-k="title"></h1><div class="final" data-k="final"></div>
       <button data-k="btn">Chơi lại (R)</button></div>`;
   els = {};
