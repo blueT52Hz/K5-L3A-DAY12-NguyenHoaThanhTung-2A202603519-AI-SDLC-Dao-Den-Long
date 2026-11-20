@@ -1,9 +1,19 @@
+import type { NightId } from '../../core/types';
+import { getNight } from '../../core/nights';
 import { clampSettings, loadSettings, saveSettings, type Settings } from './settings-store';
 
 export interface SettingsPanel { open(): void; close(): void; get(): Settings }
 
-/** Modal with volume + mouse sensitivity sliders. Persists on every change. */
-export function createSettingsPanel(root: HTMLElement, onChange: (s: Settings) => void): SettingsPanel {
+const NIGHT_OPTIONS = ([1, 2, 3] as NightId[])
+  .map((n) => `<option value="${n}">Đêm ${n} - ${getNight(n).name}</option>`).join('');
+
+/**
+ * Modal with volume + mouse sensitivity sliders (persisted on every change) and a level selector.
+ * "Chuyển màn" calls onSwitchNight with the chosen night; the level choice itself is never persisted.
+ */
+export function createSettingsPanel(
+  root: HTMLElement, onChange: (s: Settings) => void, onSwitchNight: (night: NightId) => void,
+): SettingsPanel {
   let current = loadSettings();
   const el = document.createElement('div');
   el.className = 'overlay settings-modal';
@@ -14,6 +24,8 @@ export function createSettingsPanel(root: HTMLElement, onChange: (s: Settings) =
     <label class="set-row">Độ nhạy chuột <output data-k="so"></output>
       <input type="range" min="0.2" max="3" step="0.1" data-k="sens"></label>
     <label class="set-row"><span><input type="checkbox" data-k="cb"> Bảng màu dễ phân biệt</span></label>
+    <label class="set-row">Chọn màn <select data-k="lvl">${NIGHT_OPTIONS}</select></label>
+    <button data-k="switch">Chuyển màn</button>
     <button data-k="close">Đóng</button></div>`;
   root.appendChild(el);
   const vol = el.querySelector<HTMLInputElement>('[data-k="vol"]')!;
@@ -39,6 +51,11 @@ export function createSettingsPanel(root: HTMLElement, onChange: (s: Settings) =
   sens.addEventListener('input', commit);
   cb.addEventListener('change', commit);
   el.querySelector('[data-k="close"]')!.addEventListener('click', () => el.classList.remove('show'));
+  const lvl = el.querySelector<HTMLSelectElement>('[data-k="lvl"]')!;
+  el.querySelector('[data-k="switch"]')!.addEventListener('click', () => {
+    const n = Number(lvl.value);
+    if (n === 1 || n === 2 || n === 3) onSwitchNight(n);
+  });
   paint();
   onChange(current);
   return {

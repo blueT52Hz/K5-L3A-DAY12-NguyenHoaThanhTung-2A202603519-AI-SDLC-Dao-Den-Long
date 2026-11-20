@@ -1,9 +1,14 @@
 // Landing page controller: renders markup, spawns ambient fireflies, wires the horizontal
 // accordion and every [data-start] button. The game boots only after a start click.
+// A [data-start-night="N"] button (level select card) boots straight into night N's intro; plain
+// [data-start] buttons keep the old behavior (in-game menu, whose "Chơi" starts at night 1).
 import './landing.css';
 import './landing-hero-story.css';
 import './landing-guide-sections.css';
+import './landing-level-select.css';
+import type { NightId } from '../../core/types';
 import { navHeroStoryMarkup } from './landing-markup-nav-hero-story';
+import { levelSelectMarkup } from './landing-markup-level-select';
 import { guideSectionsMarkup } from './landing-markup-guide-sections';
 import { initLandingMotion, playLandingExit } from './landing-motion-gsap';
 
@@ -53,8 +58,14 @@ function wireMenu(root: HTMLElement): void {
   window.addEventListener('keydown', (e) => { if (e.key === 'Escape') setOpen(false); });
 }
 
-export function mountLanding(root: HTMLElement, onStart: () => void): void {
-  root.innerHTML = `<main class="ln-main">${navHeroStoryMarkup()}${guideSectionsMarkup()}</main>`;
+/** Night requested by a level card (data-start-night 1|2|3); undefined for plain start buttons. */
+function startNightOf(btn: HTMLElement): NightId | undefined {
+  const n = Number(btn.dataset.startNight);
+  return n === 1 || n === 2 || n === 3 ? n : undefined;
+}
+
+export function mountLanding(root: HTMLElement, onStart: (night?: NightId) => void): void {
+  root.innerHTML = `<main class="ln-main">${navHeroStoryMarkup()}${levelSelectMarkup()}${guideSectionsMarkup()}</main>`;
   document.body.classList.add('ln-active');
 
   const fireflies = root.querySelector<HTMLElement>('[data-fireflies]');
@@ -64,7 +75,7 @@ export function mountLanding(root: HTMLElement, onStart: () => void): void {
   const disposeMotion = initLandingMotion(root);
 
   let starting = false;
-  const start = async () => {
+  const start = async (night?: NightId) => {
     if (starting) return; // ignore double clicks while the exit animation runs
     starting = true;
     try {
@@ -74,8 +85,8 @@ export function mountLanding(root: HTMLElement, onStart: () => void): void {
       root.remove();
       document.body.classList.remove('ln-active', 'ln-menu-open');
       window.scrollTo(0, 0);
-      onStart();
+      onStart(night);
     }
   };
-  root.querySelectorAll<HTMLElement>('[data-start]').forEach((btn) => btn.addEventListener('click', start));
+  root.querySelectorAll<HTMLElement>('[data-start]').forEach((btn) => btn.addEventListener('click', () => void start(startNightOf(btn))));
 }

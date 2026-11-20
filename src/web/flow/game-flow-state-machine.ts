@@ -1,5 +1,6 @@
 // Pure flow state machine: menu -> intro(n) -> playing -> result -> intro(n+1) | dawn.
-// Loss: retry the same night or go back to menu. Total = sum of won nights' scores.
+// A run may start at any night N (level select); it then covers nights N..3 and ends at dawn.
+// Loss: retry the same night or go back to menu. Total = sum of won nights' scores in this run.
 import type { NightId } from '../../core/types';
 
 export type FlowPhase =
@@ -18,16 +19,15 @@ export class GameFlow {
     return Object.values(this.wonScores).reduce((a, b) => a + (b ?? 0), 0);
   }
 
-  /** Menu "Chơi": fresh run from night 1. */
-  startRun(): void {
+  /** Fresh run starting at `startNight` (default 1): score reset, then that night's intro. */
+  startRun(startNight: NightId = 1): void {
     this.wonScores = {};
-    this.phase = { kind: 'intro', night: 1 };
+    this.phase = { kind: 'intro', night: startNight };
   }
 
-  /** Dev-only (?night=N): jump straight to intro of night n. */
+  /** Dev-only (?night=N) alias kept for compatibility: same as startRun(n). */
   startAtNight(n: NightId): void {
-    this.wonScores = {};
-    this.phase = { kind: 'intro', night: n };
+    this.startRun(n);
   }
 
   /** Intro screen dismissed: start playing the night. */

@@ -23,8 +23,11 @@ import { soundForEvent } from './audio/event-to-sound';
 let booted = false;
 const RESULT_DELAY_S = 1.2;
 
-/** Create renderer, scene, HUD and flow; start the fixed-step loop. Called once after landing "Bắt đầu chơi". */
-export function bootGame(): void {
+/**
+ * Create renderer, scene, HUD and flow; start the fixed-step loop. Called once after a landing start button.
+ * `startNight` (landing level card) opens that night's intro directly; omitted = in-game menu as before.
+ */
+export function bootGame(startNight?: NightId): void {
   if (booted) return;
   booted = true;
 
@@ -60,7 +63,12 @@ export function bootGame(): void {
   const hudRoot = document.getElementById('hud')!;
   initInput(renderer.domElement);
   initHud(hudRoot, () => requestPause());
-  const settings = createSettingsPanel(hudRoot, (s) => { audio.setVolume(s.volume); setMouseSensitivity(s.mouseSensitivity); setColorblind(s.colorblind); });
+  const settings = createSettingsPanel(
+    hudRoot,
+    (s) => { audio.setVolume(s.volume); setMouseSensitivity(s.mouseSensitivity); setColorblind(s.colorblind); },
+    // "Chuyển màn": abandon the current night/run and start a new run at the chosen night's intro.
+    (night) => { flow.startRun(night); settings.close(); pause.show(false); enterPhase(); },
+  );
 
   const enterPhase = (): void => {
     const ph = flow.phase;
@@ -111,6 +119,7 @@ export function bootGame(): void {
   // Dev-only: ?night=2|3 starts at that night's intro (screenshots / quick testing).
   const devNight = Number(new URLSearchParams(window.location.search).get('night'));
   if (devNight === 2 || devNight === 3) flow.startAtNight(devNight as NightId);
+  else if (startNight) flow.startRun(startNight);
   enterPhase();
 
   const update = (): void => {

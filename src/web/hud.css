@@ -51,3 +51,5 @@ body.colorblind #hud .hud-warn, body.colorblind #hud .hud-clock.danger { color: 
 #hud .pause td:first-child { color: #ffb35c; font-weight: 600; white-space: nowrap; }
 #hud .set-row { display: flex; flex-direction: column; gap: 6px; align-self: stretch; font-size: 17px; }
 #hud .set-row input { width: 100%; }
+#hud .set-row select { font-size: 17px; padding: 6px 10px; border-radius: 8px; border: 1px solid #ff9a3c; background: #2a1440; color: #f5f1e6; }
+#hud .panel button:focus-visible, #hud .set-row select:focus-visible { outline: 2px solid #f2c14e; outline-offset: 3px; }

@@ -1,0 +1,36 @@
+/* Landing "Chọn màn" level cards: warm lantern palette on a deep night-blue card.
+   Each card is a real <button> (keyboard focusable); hover/focus lifts it and brightens the glow. */
+.ln-levels { --lv-amber: #ffb347; --lv-gold: #f2c14e; --lv-text: #f5f1e6; --lv-bg: #0e1430; }
+/* `.ln-main h2 { margin: 0 }` outranks `.ln-h2`, so restore the heading gap with a more specific selector. */
+.ln-levels .ln-h2 { margin-bottom: 48px; }
+.ln-level-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.ln-level {
+  position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: flex-start; gap: 12px;
+  min-height: 260px; padding: 30px 28px 26px; text-align: left; cursor: pointer; font: inherit; color: var(--lv-text);
+  border: 0; border-radius: 1.75rem;
+  background: radial-gradient(90% 70% at 50% 0%, rgba(255, 179, 71, 0.14), transparent 65%), linear-gradient(170deg, #16204a, var(--lv-bg) 72%);
+  box-shadow: inset 0 0 0 1px rgba(255, 179, 71, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 24px 60px -30px rgba(0, 0, 0, 0.8);
+  transition: transform 0.6s var(--ln-ease), box-shadow 0.6s var(--ln-ease);
+}
+.ln-level:hover, .ln-level:focus-visible {
+  transform: translateY(-6px);
+  box-shadow: inset 0 0 0 1.5px var(--lv-amber), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 30px 70px -26px rgba(255, 150, 50, 0.55);
+}
+.ln-level:focus-visible { outline: 2px solid var(--lv-gold); outline-offset: 4px; }
+.ln-level:active { transform: translateY(-2px) scale(0.99); }
+.ln-level-glow {
+  position: absolute; right: -40px; top: -40px; width: 160px; height: 160px; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, rgba(242, 193, 78, 0.35), transparent 65%); opacity: 0.6; transition: opacity 0.6s var(--ln-ease);
+}
+.ln-level:hover .ln-level-glow, .ln-level:focus-visible .ln-level-glow { opacity: 1; }
+.ln-level-kicker { font-size: 12.5px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--lv-gold); }
+.ln-level-title { font: 800 1.55rem/1.15 var(--ln-display); letter-spacing: -0.02em; color: var(--lv-text); }
+.ln-level-teaser { font-size: 15.5px; line-height: 1.55; color: rgba(245, 241, 230, 0.72); flex: 1; }
+.ln-level-meta { display: flex; justify-content: space-between; align-items: center; gap: 12px; align-self: stretch;
+  padding-top: 14px; border-top: 1px solid rgba(255, 179, 71, 0.18); font-size: 14px; color: rgba(245, 241, 230, 0.7); font-variant-numeric: tabular-nums; }
+.ln-level-go { font-weight: 700; color: var(--lv-amber); }
+
+@media (max-width: 899px) {
+  .ln-level-grid { grid-template-columns: 1fr; gap: 16px; }
+  .ln-level { min-height: 0; padding: 24px 22px 22px; }
+}
