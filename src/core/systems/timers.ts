@@ -7,10 +7,8 @@ export function tickTimers(s: GameState): void {
   if (p.invulnTicks > 0) p.invulnTicks -= 1;
   if (p.pulseCooldownTicks > 0) p.pulseCooldownTicks -= 1;
   for (const sh of s.shades) {
-    if (sh.stunTicks > 0) {
-      sh.stunTicks -= 1;
-      if (sh.stunTicks === 0) sh.state = 'chase';
-    }
+    if (sh.stunTicks > 0) sh.stunTicks -= 1;
+    if (sh.state === 'stunned' && sh.stunTicks === 0) sh.state = 'chase';
   }
   if (s.spawnEnabled && s.spawnTicks > 0) s.spawnTicks -= 1;
 }

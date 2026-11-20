@@ -44,6 +44,15 @@ describe('pulse', () => {
   });
 });
 
+describe('edge lantern zone', () => {
+  it('pulse near island edge keeps shade outside zone and inside island', () => {
+    const s = bare({ player: { carried: 1, pos: [0, 0, 36] }, shades: [{ pos: [0, 1, 38.5] }], lanterns: [{ id: 'L1', pos: [0, 0, 38], lit: true }] });
+    run(s, { pulse: true }, 1);
+    expect(distXZ(s.shades[0].pos, s.lanterns[0].pos)).toBeGreaterThanOrEqual(5 - 1e-9);
+    expect(distXZ(s.shades[0].pos, [0, 0, 0])).toBeLessThanOrEqual(40 + 1e-9);
+  });
+});
+
 describe('shade ai', () => {
   it('chases at shade_speed', () => {
     const s = bare({ shades: [{ pos: [10, 0, 0] }] });
