@@ -12,7 +12,7 @@ describe('createGame', () => {
     const s = createGame(7);
     expect(s.tick).toBe(0);
     expect(s.status).toBe('playing');
-    expect(s.t0).toBe(300);
+    expect(s.t0).toBe(240);
     expect(s.player.flames).toBe(3);
     // v1.1: 20 initial motes at distinct Night 1 spawn points (was 40 random-in-disc).
     expect(s.motes).toHaveLength(20);

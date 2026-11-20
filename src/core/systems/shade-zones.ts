@@ -3,6 +3,7 @@ import { getNight } from '../nights';
 import type { NightConfig } from '../nights/night-config-types';
 import { TUNING } from '../tuning';
 import type { GameState, Lantern, Shade, XZ } from '../types';
+import { hasSafeZone } from './lantern-fuel';
 import { settleShadeY, shadeCanStand, unitXZ } from './shade-movement-terrain';
 
 /** Float slack for "on the safe circle counts as outside". */
@@ -11,7 +12,8 @@ const EPS = 1e-9;
 const CIRCLE_SAMPLES = 720;
 
 const insideZone = (cx: number, cz: number, x: number, z: number): boolean => Math.hypot(x - cx, z - cz) < TUNING.safe_radius - EPS;
-const litLanterns = (s: GameState): Lantern[] => s.lanterns.filter((l) => l.lit);
+/** Lanterns that currently project a safe zone (lit and fuel >= low-fuel threshold). */
+const litLanterns = (s: GameState): Lantern[] => s.lanterns.filter(hasSafeZone);
 
 /** A spot where the shade may end up: standable from its foot and outside every lit safe zone. */
 function isFreeSpot(s: GameState, cfg: NightConfig, sh: Shade, x: number, z: number): boolean {
@@ -44,7 +46,7 @@ function exitPoint(s: GameState, cfg: NightConfig, sh: Shade, cx: number, cz: nu
 }
 
 /**
- * Tick step 6 (spec 6.4): shades inside the zone of a lantern lit since the last call are flagged evicting.
+ * Tick step 6 (spec 6.4): shades inside the zone of a lantern whose zone appeared since (lit, relit, refuelled >= 30) the last call are flagged evicting.
  * Lanterns already lit when the game was created count as seen (shades there are clamped at step 8 instead).
  */
 export function updateSafeZones(s: GameState): void {
@@ -56,6 +58,7 @@ export function updateSafeZones(s: GameState): void {
       if (sh.evictFrom !== null || !insideZone(l.pos[0], l.pos[2], sh.pos[0], sh.pos[2])) continue;
       sh.evictFrom = [l.pos[0], l.pos[2]];
       sh.evictTicks = EVICT_MAX_TICKS;
+      if (sh.state === 'drain') { sh.state = 'wander'; sh.targetLanternId = null; sh.drainTicks = 0; }
     }
   }
   s.safeZoneLanternIds = lit.map((l) => l.id);

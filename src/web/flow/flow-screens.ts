@@ -1,7 +1,7 @@
 // DOM screens for the flow: main menu, night intro, result, dawn.
 import type { NightId } from '../../core/types';
 import { getNight } from '../../core/nights';
-import { OLD_MAN_LINES } from './night-intro-text';
+import { GAME_OVER_COPY, OLD_MAN_LINES } from './night-intro-text';
 
 export interface FlowScreenActions {
   onPlay(): void;
@@ -41,17 +41,17 @@ export function createFlowScreens(root: HTMLElement, a: FlowScreenActions): Flow
        <p class="quote">"${OLD_MAN_LINES[night]}"</p><p class="sub">- Ông Đăng</p>
        <button data-k="go">Bắt đầu</button>`,
       { go: a.onBeginNight }),
-    result: (night, won, nightScore, total, reason) => show(
+    result: (night, won, nightScore, total, reason) => { const c = GAME_OVER_COPY[reason] ?? GAME_OVER_COPY[won ? 'dawn_survived' : 'dawn']; show(
       won
-        ? `<div class="kicker">Đêm ${night}</div><h1>Thắng!</h1>
+        ? `<div class="kicker">Đêm ${night}</div><h1>${c.title}</h1><p class="sub">${c.note}</p>
            <p class="final">Điểm đêm: ${nightScore}</p><p class="final">Tổng: ${total}</p>
            <button data-k="next">${night === 3 ? 'Đón bình minh' : `Sang Đêm ${night + 1}`}</button>`
-        : `<div class="kicker">Đêm ${night}</div><h1>Thua - ${reason}</h1>
+        : `<div class="kicker">Đêm ${night}</div><h1>${c.title}</h1><p class="sub">${c.note}</p>
            <p class="final">Điểm đêm: ${nightScore}</p><p class="final">Tổng: ${total}</p>
            <button data-k="retry">Chơi lại Đêm ${night}</button><button data-k="menu">Về menu</button>`,
-      { next: a.onContinue, retry: a.onRetry, menu: a.onMenu }),
+      { next: a.onContinue, retry: a.onRetry, menu: a.onMenu }); },
     dawn: (total) => show(
-      `<h1>Bình Minh</h1><p class="quote">Ba ngọn đèn cuối đã sáng, đảo thoát khỏi bóng đêm.</p>
+      `<h1>Bình Minh</h1><p class="quote">Ba đêm giữ đèn sáng tới tận bình minh, đảo thoát khỏi bóng đêm.</p>
        <p class="final">Tổng điểm: ${total}</p><button data-k="menu">Về menu</button>`,
       { menu: a.onMenu }),
     hide: () => { el.classList.remove('show'); el.innerHTML = ''; },

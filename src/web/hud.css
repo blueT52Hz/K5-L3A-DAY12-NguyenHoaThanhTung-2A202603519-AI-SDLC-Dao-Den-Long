@@ -7,6 +7,9 @@ canvas { display: block; }
 #hud .hud-clock { top: 10px; left: 50%; transform: translateX(-50%); font-size: 34px; font-weight: 700;
   background: rgba(30, 14, 46, 0.78); border: 1px solid #ff9a3c; border-radius: 10px; padding: 2px 16px; }
 #hud .hud-clock.danger { color: #ff5a5f; border-color: #ff5a5f; animation: hud-blink 0.8s steps(2) infinite; }
+#hud .hud-warn { top: 100px; left: 50%; transform: translateX(-50%); font-size: 20px; font-weight: 700; color: #ff5a5f; }
+body.colorblind #hud .hud-warn, body.colorblind #hud .hud-clock.danger { color: #ffffff; border-color: #ffffff; }
+#hud .hud-motes em { font-style: normal; font-size: 16px; font-weight: 700; margin-left: 8px; align-self: center; }
 @keyframes hud-blink { 50% { opacity: 0.35; } }
 #hud .hud-topright { top: 12px; right: 76px; text-align: right; font-size: 18px; font-weight: 600; }
 #hud .hud-status { top: 64px; left: 50%; transform: translateX(-50%); font-size: 18px; font-weight: 600; color: #c9a7ff; }

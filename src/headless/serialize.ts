@@ -1,7 +1,10 @@
+import { fuelValue } from '../core/systems/lantern-fuel';
+import { playerCapacity } from '../core/systems/player-capacity';
 import type { GameEvent, GameState, Vec3 } from '../core/types';
 
 const r3 = (x: number): number => Math.round(x * 1000) / 1000 + 0;
 const v3 = (p: Vec3): Vec3 => [r3(p[0]), r3(p[1]), r3(p[2])];
+
 
 const sec = (ticks: number): number => r3(ticks / 60);
 
@@ -15,8 +18,9 @@ export function snapshotLine(s: GameState): string {
     player: {
       pos: v3(p.pos), vel: v3(p.vel), grounded: p.grounded, flames: p.flames, carried: p.carried,
       invuln: p.invulnTicks > 0, dash_cd_s: sec(p.dashCooldownTicks), pulse_cd_s: sec(p.pulseCooldownTicks), charm_s: sec(p.charmTicks),
+      capacity: playerCapacity(s),
     },
-    lanterns: s.lanterns.map((l) => ({ id: l.id, pos: v3(l.pos), lit: l.lit, deposited: l.deposited })),
+    lanterns: s.lanterns.map((l) => ({ id: l.id, pos: v3(l.pos), lit: l.lit, deposited: l.deposited, fuel: l.lit ? fuelValue(l) : 0, ever_lit: l.everLit, relit_count: l.relitCount })),
     shades: s.shades.map((x) => ({ id: x.id, pos: v3(x.pos), state: x.state })),
     motes_active: s.motes.length,
     motes: s.motes.map((m) => ({ id: m.id, pos: v3(m.pos), kind: m.kind, ttl_s: m.ttlTicks === null ? null : sec(m.ttlTicks) })),

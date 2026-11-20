@@ -8,21 +8,18 @@ import { nextRandom } from '../rng';
 import { TUNING } from '../tuning';
 import type { GameState, Shade } from '../types';
 import { settleShadeY, shadeCanStand, walkShade } from './shade-movement-terrain';
+import { drainStep, walkTowardLowFuelLantern } from './shade-drain-behavior';
 import { evictStep, keepOutOfSafeZones } from './shade-zones';
-
-/** Order shades by the number in their id (S2 before S10). */
-export function compareShadeIds(a: Shade, b: Shade): number {
-  return Number(a.id.slice(1)) - Number(b.id.slice(1));
-}
 
 /**
  * Tick step 2, after the counters were decremented: a timed state whose counter reached 0 ends.
- * spawning -> wander; stunned / recoil -> chase if XZ to May <= SHADE_GIVE_UP, else wander (spec 6.6 [TQ]).
+ * spawning -> wander; stunned -> always wander (Phase 3); recoil -> chase if XZ to May <= SHADE_GIVE_UP, else wander.
  */
 export function endTimedShadeState(s: GameState, sh: Shade): void {
   if (sh.stateTicks > 0) return;
   if (sh.state === 'spawning') sh.state = 'wander';
-  else if (sh.state === 'stunned' || sh.state === 'recoil') {
+  else if (sh.state === 'stunned') sh.state = 'wander';
+  else if (sh.state === 'recoil') {
     sh.state = distXZ(sh.pos, s.player.pos) <= SHADE_GIVE_UP ? 'chase' : 'wander';
   }
 }
@@ -50,6 +47,8 @@ function wanderOrChase(s: GameState, cfg: NightConfig, sh: Shade): void {
     walkShade(cfg, sh, (p[0] - sh.pos[0]) * k, (p[2] - sh.pos[2]) * k);
     return;
   }
+  // wander: drift toward the nearest low-fuel lantern (no RNG), or start draining it when in range.
+  if (walkTowardLowFuelLantern(s, cfg, sh)) return;
   // wander: new random heading every HEADING_CHANGE_TICKS, half speed.
   if (sh.headingTicks === 0) {
     const a = nextRandom(s) * Math.PI * 2;
@@ -73,6 +72,7 @@ export function moveShades(s: GameState): void {
     const prevZ = sh.pos[2];
     const pushing = sh.pushTicks > 0;
     if (pushing) pushStep(cfg, sh);
+    else if (sh.state === 'drain') { if (drainStep(s, sh)) wanderOrChase(s, cfg, sh); }
     else if (sh.state === 'wander' || sh.state === 'chase') wanderOrChase(s, cfg, sh);
     else if (sh.state === 'recoil') {
       const r = RECOIL_DIST / RECOIL_TICKS;

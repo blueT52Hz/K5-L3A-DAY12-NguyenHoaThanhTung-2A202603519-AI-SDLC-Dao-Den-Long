@@ -1,3 +1,4 @@
+import { TUNING } from '../tuning';
 import type { NightConfig } from './night-config-types';
 import { ringPoints } from './ring-points';
 
@@ -5,7 +6,7 @@ import { ringPoints } from './ring-points';
 export const NIGHT_1: NightConfig = {
   id: 1,
   name: 'Đảo Bến',
-  durationS: 300,
+  durationS: TUNING.night1_duration_s,
   surfaces: [{ kind: 'disc', cx: 0, cz: 0, r: 40, y: 0 }],
   obstacles: [],
   start: [0, 0, 0],

@@ -1,3 +1,4 @@
+import { TUNING } from '../tuning';
 import type { JumpPad, NightConfig } from './night-config-types';
 import { ringPoints } from './ring-points';
 import type { Vec3 } from '../types';
@@ -16,7 +17,7 @@ function pad(pos: Vec3, target: Vec3): JumpPad {
 export const NIGHT_2: NightConfig = {
   id: 2,
   name: 'Đảo Cau',
-  durationS: 330,
+  durationS: TUNING.night2_duration_s,
   surfaces: [
     { kind: 'disc', cx: 0, cz: 0, r: 28, y: 0 },
     { kind: 'disc', cx: 70, cz: 0, r: 28, y: 0 },

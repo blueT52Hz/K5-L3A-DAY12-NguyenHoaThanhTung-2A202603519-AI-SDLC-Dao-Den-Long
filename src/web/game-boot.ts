@@ -16,6 +16,7 @@ import { createRenderer, detectQuality } from './render-quality';
 import { GameFlow } from './flow/game-flow-state-machine';
 import { createFlowScreens } from './flow/flow-screens';
 import { createSettingsPanel } from './settings/settings-panel';
+import { setColorblind } from './colorblind-mode';
 import { AudioEngine } from './audio/audio-engine';
 import { soundForEvent } from './audio/event-to-sound';
 
@@ -41,6 +42,7 @@ export function bootGame(): void {
   let state: GameState = createGame(Date.now() % 2147483647, {}, 1);
   let facingRad = 0;
   let resultTimer = 0;
+  let overReason = '';
   let lastCountdown = -1;
   let lastWindWarn = false;
   let prevJump = false;
@@ -52,13 +54,13 @@ export function bootGame(): void {
     sync.reset(state);
     resetHud(state);
     clearInput();
-    lastCountdown = -1; lastWindWarn = false; prevJump = false; resultTimer = 0;
+    overReason = ''; lastCountdown = -1; lastWindWarn = false; prevJump = false; resultTimer = 0;
   }
 
   const hudRoot = document.getElementById('hud')!;
   initInput(renderer.domElement);
   initHud(hudRoot, () => requestPause());
-  const settings = createSettingsPanel(hudRoot, (s) => { audio.setVolume(s.volume); setMouseSensitivity(s.mouseSensitivity); });
+  const settings = createSettingsPanel(hudRoot, (s) => { audio.setVolume(s.volume); setMouseSensitivity(s.mouseSensitivity); setColorblind(s.colorblind); });
 
   const enterPhase = (): void => {
     const ph = flow.phase;
@@ -69,8 +71,7 @@ export function bootGame(): void {
     else if (ph.kind === 'dawn') screens.dawn(flow.total);
     else if (ph.kind === 'result') {
       audio.setMusic(false);
-      const reason = state.player.flames <= 0 ? 'hết máu' : 'trời đã sáng';
-      screens.result(ph.night, ph.won, ph.nightScore, flow.total, reason);
+      screens.result(ph.night, ph.won, ph.nightScore, flow.total, overReason);
     }
     setHudVisible(ph.kind === 'playing');
   };
@@ -119,7 +120,10 @@ export function bootGame(): void {
     prevJump = input.jump;
     const events = step(state, input);
     if (jumpEdge) audio.play('jump');
-    for (const e of events) { const id = soundForEvent(e); if (id) audio.play(id); }
+    for (const e of events) {
+      const id = soundForEvent(e); if (id) audio.play(id);
+      if (e.name === 'game_over') overReason = String(e.data.reason ?? '');
+    }
     const sec = Math.ceil(state.timeLeftS);
     if (!state.paused && state.timeLeftS <= 10 && sec !== lastCountdown && state.status === 'playing') { lastCountdown = sec; audio.play('tick'); }
     if (state.wind.warning && !lastWindWarn) audio.play('wind');

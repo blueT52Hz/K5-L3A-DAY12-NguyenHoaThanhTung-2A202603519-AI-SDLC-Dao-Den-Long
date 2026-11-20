@@ -6,7 +6,7 @@ import { groundBelow } from '../terrain/terrain-queries';
 import { TUNING } from '../tuning';
 import type { GameEvent, GameState, Vec3 } from '../types';
 import { addDroppedMote } from './mote-spawner';
-import { compareShadeIds } from './shade-ai';
+import { compareShadeIds } from './shade-id-order';
 import { shadeFootY, unitXZ } from './shade-movement-terrain';
 
 /**

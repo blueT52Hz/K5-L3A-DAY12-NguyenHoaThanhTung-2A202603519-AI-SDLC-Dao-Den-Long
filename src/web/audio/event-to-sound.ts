@@ -8,6 +8,8 @@ export function soundForEvent(e: GameEvent): SoundId | null {
   switch (e.name) {
     case 'mote_picked': return 'pickup';
     case 'lantern_lit': return 'light';
+    case 'refuel': return 'light';
+    case 'lantern_out': return 'shade';
     case 'pulse': return 'pulse';
     case 'player_hit': return 'hit';
     case 'dash': return 'dash';

@@ -1,12 +1,13 @@
 import * as THREE from 'three';
 import type { Lantern, Vec3 } from '../../core/types';
+import { isLowFuel } from '../../core/systems/lantern-fuel';
 
-/** Closest unlit lantern to `from` (XZ distance), or null if all are lit. */
-export function nearestUnlitLantern(lanterns: Lantern[], from: Vec3): Lantern | null {
+/** Closest lantern needing help (unlit or low on fuel) to `from` (XZ distance), or null. */
+export function nearestNeedyLantern(lanterns: Lantern[], from: Vec3): Lantern | null {
   let best: Lantern | null = null;
   let bd = Infinity;
   for (const l of lanterns) {
-    if (l.lit) continue;
+    if (l.lit && !isLowFuel(l)) continue;
     const d = Math.hypot(l.pos[0] - from[0], l.pos[2] - from[2]);
     if (d < bd) { bd = d; best = l; }
   }

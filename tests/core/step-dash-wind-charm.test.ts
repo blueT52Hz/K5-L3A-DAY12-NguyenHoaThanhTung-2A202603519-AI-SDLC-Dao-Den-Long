@@ -143,7 +143,7 @@ describe('strong wind', () => {
     run(s, {}, 1900);
     expect(s.wind.active || s.wind.warning).toBe(false);
     for (const n of [1, 2] as const) {
-      const g = bare(n);
+      const g = bare(n, { random_drifters: false }); // N2 drifter spawn at tick 1200 draws rng by design
       const rng = g.rngState;
       run(g, {}, 1900);
       expect(g.wind.active).toBe(false);

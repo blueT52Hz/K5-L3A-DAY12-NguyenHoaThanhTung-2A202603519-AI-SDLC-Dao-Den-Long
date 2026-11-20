@@ -11,7 +11,7 @@ function opt<T>(o: Record<string, unknown>, k: string, check: (v: unknown) => bo
   if (!check(o[k])) throw new InputFormatError(`scenario: ${what}`);
   return o[k] as T;
 }
-const SHADE_STATES = ['spawning', 'wander', 'chase', 'recoil', 'stunned'];
+const SHADE_STATES = ['spawning', 'wander', 'chase', 'recoil', 'stunned', 'drain'];
 const DRIFTER_STATES = ['idle', 'chase', 'flee', 'removed'];
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
@@ -26,7 +26,7 @@ export function parseScenario(json: unknown): Scenario {
     if (p.pos !== undefined) sc.player.pos = vec3(p.pos, 'player.pos');
     sc.player.carried = opt(p, 'carried', isNum, 'player.carried must be a number');
     sc.player.flames = opt(p, 'flames', isNum, 'player.flames must be a number');
-    for (const k of ['invuln_ticks', 'dash_cd_ticks', 'pulse_cd_ticks', 'charm_ticks'] as const) {
+    for (const k of ['invuln_ticks', 'dash_cd_ticks', 'pulse_cd_ticks', 'charm_ticks', 'successful_lights'] as const) {
       sc.player[k] = opt(p, k, isNum, `player.${k} must be a number`);
     }
   }
@@ -46,7 +46,8 @@ export function parseScenario(json: unknown): Scenario {
       const id = opt<string>(x, 'id', (v) => typeof v === 'string', `shades[${i}].id must be a string`);
       const state = opt<ShadeState>(x, 'state', (v) => typeof v === 'string' && SHADE_STATES.includes(v), `shades[${i}].state invalid`);
       const left = opt<number>(x, 'state_ticks_left', isNum, `shades[${i}].state_ticks_left must be a number`);
-      return { ...(id !== undefined ? { id } : {}), pos: vec3(x.pos, `shades[${i}].pos`), ...(state !== undefined ? { state } : {}), ...(left !== undefined ? { state_ticks_left: left } : {}) };
+      const target = opt<string>(x, 'target_lantern_id', (v) => typeof v === 'string', `shades[${i}].target_lantern_id must be a string`);
+      return { ...(id !== undefined ? { id } : {}), pos: vec3(x.pos, `shades[${i}].pos`), ...(state !== undefined ? { state } : {}), ...(left !== undefined ? { state_ticks_left: left } : {}), ...(target !== undefined ? { target_lantern_id: target } : {}) };
     });
   }
   if (json.lanterns !== undefined) {
@@ -57,6 +58,8 @@ export function parseScenario(json: unknown): Scenario {
       if (x.pos !== undefined) l.pos = vec3(x.pos, `lanterns[${i}].pos`);
       l.deposited = opt(x, 'deposited', isNum, `lanterns[${i}].deposited must be a number`);
       l.lit = opt(x, 'lit', (v) => typeof v === 'boolean', `lanterns[${i}].lit must be boolean`);
+      l.fuel = opt(x, 'fuel', isNum, `lanterns[${i}].fuel must be a number`);
+      l.ever_lit = opt(x, 'ever_lit', (v) => typeof v === 'boolean', `lanterns[${i}].ever_lit must be boolean`);
       return l;
     });
   }

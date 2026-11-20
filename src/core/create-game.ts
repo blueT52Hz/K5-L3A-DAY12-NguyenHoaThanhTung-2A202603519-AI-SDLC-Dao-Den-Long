@@ -1,5 +1,6 @@
-import { DRIFTER_FLEE_TICKS, DRIFTER_Y } from './constants';
+import { DRIFTER_FLEE_TICKS, DRIFTER_Y, FUEL_UNITS_PER_FUEL } from './constants';
 import { getNight } from './nights';
+import { hasSafeZone } from './systems/lantern-fuel';
 import { pickInitialMotes } from './systems/mote-spawner';
 import { snapShadePos } from './systems/shade-movement-terrain';
 import { createShade } from './systems/shade-spawner';
@@ -9,7 +10,7 @@ import type { GameState, Lantern, NightId, Scenario, Vec3 } from './types';
 export class ScenarioError extends Error {}
 
 function defaultLanterns(night: NightId): Lantern[] {
-  return getNight(night).lanterns.map((l) => ({ id: l.id, pos: [...l.pos] as Vec3, lit: false, deposited: 0 }));
+  return getNight(night).lanterns.map((l) => ({ id: l.id, pos: [...l.pos] as Vec3, lit: false, deposited: 0, fuelUnits: 0, everLit: false, relitCount: 0 }));
 }
 
 /** Highest numeric suffix among ids like M12 / S3. */
@@ -30,7 +31,7 @@ export function createGame(seed: number, scenario: Scenario = {}, night: NightId
     player: {
       pos: [...cfg.start], vel: [0, 0, 0], vy: 0, grounded: true, facing: [...cfg.startFacing], flames: TUNING.flames, carried: 0,
       invulnTicks: 0, pulseCooldownTicks: 0, dashTicks: 0, dashCooldownTicks: 0, dashDir: [0, 0],
-      charmTicks: 0, launchVel: null, respawnTicks: 0,
+      charmTicks: 0, launchVel: null, respawnTicks: 0, successfulLights: 0,
     },
     motes: [], shades: [], lanterns: defaultLanterns(night), drifters: [],
     charms: cfg.charms.map((c) => ({ id: c.id, pos: [...c.pos] as Vec3, available: true, respawnTicks: 0 })),
@@ -47,9 +48,12 @@ export function createGame(seed: number, scenario: Scenario = {}, night: NightId
     if (l.pos) target.pos = [...l.pos];
     if (l.deposited !== undefined) target.deposited = l.deposited;
     if (l.lit !== undefined) target.lit = l.lit;
+    const fuel = Math.min(Math.max(l.fuel ?? 100, 0), TUNING.fuel_max);
+    target.fuelUnits = target.lit ? Math.round(fuel * FUEL_UNITS_PER_FUEL) : 0;
+    target.everLit = l.ever_lit ?? target.lit;
   }
-  // Lanterns lit from the start never evict (spec 6.4: eviction is for a lantern that has just been lit).
-  s.safeZoneLanternIds = s.lanterns.filter((l) => l.lit).map((l) => l.id);
+  // Lanterns with a safe zone from the start never evict (spec 6.4: eviction is for a lantern that has just been lit).
+  s.safeZoneLanternIds = s.lanterns.filter(hasSafeZone).map((l) => l.id);
 
   if (scenario.charms) {
     s.charms = scenario.charms.map((c) => {
@@ -69,6 +73,7 @@ export function createGame(seed: number, scenario: Scenario = {}, night: NightId
   if (p?.dash_cd_ticks !== undefined) s.player.dashCooldownTicks = p.dash_cd_ticks;
   if (p?.pulse_cd_ticks !== undefined) s.player.pulseCooldownTicks = p.pulse_cd_ticks;
   if (p?.charm_ticks !== undefined) s.player.charmTicks = p.charm_ticks;
+  s.player.successfulLights = p?.successful_lights ?? 0;
 
   // Initial motes are always drawn so the RNG stream is stable per seed, even when the scenario replaces them.
   // No shades exist at tick 0: the schedule spawns the first ones at simTick 300 (spec 6.6).
@@ -86,7 +91,12 @@ export function createGame(seed: number, scenario: Scenario = {}, night: NightId
       let id = x.id;
       if (!id) { while (used.has(`S${n}`)) n++; id = `S${n}`; used.add(id); }
       // Missing state: chase [TQ 8]; Y snapped to ground + SHADE_Y.
-      return createShade(id, snapShadePos(cfg, x.pos), x.state ?? 'chase', x.state_ticks_left ?? 0);
+      const shade = createShade(id, snapShadePos(cfg, x.pos), x.state ?? 'chase', x.state_ticks_left ?? 0);
+      if (x.target_lantern_id !== undefined) {
+        if (!s.lanterns.some((l) => l.id === x.target_lantern_id)) throw new ScenarioError(`unknown target_lantern_id: ${x.target_lantern_id}`);
+        shade.targetLanternId = x.target_lantern_id;
+      }
+      return shade;
     });
   }
   s.nextShadeId = maxIdNumber(s.shades.map((x) => x.id)) + 1;

@@ -110,10 +110,13 @@ describe('shade states (spec 6.6)', () => {
     run(s, {}, 1);
     expect(s.shades[0].state).toBe('wander');
   });
-  it('after stunned / recoil: chase if XZ <= 18 else wander', () => {
+  it('after stunned: always wander; after recoil: chase if XZ <= 18 else wander', () => {
     const near = bare({ shades: [{ pos: [17, 0, 0], state: 'stunned', state_ticks_left: 1 }] });
     run(near, {}, 1);
-    expect(near.shades[0].state).toBe('chase');
+    expect(near.shades[0].state).toBe('wander'); // Phase 3: stun -> wander regardless of distance
+    const nearRecoil = bare({ shades: [{ pos: [17, 0, 0], state: 'recoil', state_ticks_left: 1 }] });
+    run(nearRecoil, {}, 1);
+    expect(nearRecoil.shades[0].state).toBe('chase');
     const far = bare({ shades: [{ pos: [19, 0, 0], state: 'recoil', state_ticks_left: 1 }] });
     run(far, {}, 1);
     expect(far.shades[0].state).toBe('wander');

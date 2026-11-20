@@ -1,8 +1,8 @@
 // Persisted player settings (volume, mouse sensitivity). localStorage access is always guarded.
-export interface Settings { volume: number; mouseSensitivity: number }
+export interface Settings { volume: number; mouseSensitivity: number; colorblind: boolean }
 
 export const SETTINGS_KEY = 'dao-den-long.settings.v1';
-export const DEFAULT_SETTINGS: Settings = { volume: 70, mouseSensitivity: 1.0 };
+export const DEFAULT_SETTINGS: Settings = { volume: 70, mouseSensitivity: 1.0, colorblind: false };
 
 const clamp = (v: number, lo: number, hi: number): number => Math.min(hi, Math.max(lo, v));
 
@@ -15,6 +15,7 @@ export function clampSettings(s: Partial<Settings>): Settings {
   return {
     volume: clamp(num(s.volume, DEFAULT_SETTINGS.volume), 0, 100),
     mouseSensitivity: clamp(num(s.mouseSensitivity, DEFAULT_SETTINGS.mouseSensitivity), 0.2, 3.0),
+    colorblind: s.colorblind === true,
   };
 }
 

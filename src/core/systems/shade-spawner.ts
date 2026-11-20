@@ -4,10 +4,11 @@ import { getNight } from '../nights';
 import { nextRandom } from '../rng';
 import { TUNING } from '../tuning';
 import type { GameEvent, GameState, Shade, Vec3 } from '../types';
+import { hasSafeZone } from './lantern-fuel';
 
 /** A fresh shade record (no push, heading, or eviction pending). */
 export function createShade(id: string, pos: Vec3, state: Shade['state'], stateTicks: number): Shade {
-  return { id, pos, state, stateTicks, pushTicks: 0, pushDir: [0, 0], heading: [0, 0], headingTicks: 0, evictTicks: 0, evictFrom: null };
+  return { id, pos, state, stateTicks, pushTicks: 0, pushDir: [0, 0], heading: [0, 0], headingTicks: 0, evictTicks: 0, evictFrom: null, targetLanternId: null, drainTicks: 0 };
 }
 
 /** How many shades the schedule wants at this simTick: 2 at 300, then 1 at 300 + interval * k (spec 6.6). */
@@ -29,7 +30,7 @@ export function spawnShades(s: GameState, events: GameEvent[]): void {
   for (let i = 0; i < count && s.shades.length < cfg.maxShades; i++) {
     const valid = cfg.shadeSpawnPoints.filter((pt) => !used.has(pt)
       && distXZ(pt, s.player.pos) >= SHADE_SPAWN_MIN_DIST
-      && !s.lanterns.some((l) => l.lit && distXZ(pt, l.pos) < TUNING.safe_radius));
+      && !s.lanterns.some((l) => hasSafeZone(l) && distXZ(pt, l.pos) < TUNING.safe_radius));
     if (valid.length === 0) return;
     const pt = valid[Math.floor(nextRandom(s) * valid.length)];
     used.add(pt);

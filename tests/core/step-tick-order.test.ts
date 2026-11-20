@@ -11,9 +11,9 @@ describe('deposit (spec 6.4)', () => {
     const ev = run(s, { interact: true }, 1);
     expect(ev).toEqual([
       { tick: 1, name: 'deposit', data: { lantern_id: 'L1', amount: 10, deposited: 10 } },
-      { tick: 1, name: 'lantern_lit', data: { lantern_id: 'L1' } },
+      { tick: 1, name: 'lantern_lit', data: { lantern_id: 'L1', relight: false } },
     ]);
-    expect(s.score).toBe(200);
+    expect(s.score).toBe(150); // 10 x 5 + 100
   });
 
   it('out of interact radius (2.1 m) does nothing', () => {
@@ -30,7 +30,7 @@ describe('deposit (spec 6.4)', () => {
 });
 
 describe('end-of-tick result (spec 6.7)', () => {
-  it('lighting the last lantern on the dawn tick wins', () => {
+  it('lighting the last lantern on the dawn tick wins at dawn_survived', () => {
     const s = bare({
       time_left_s: 1 / 60,
       player: { pos: [-23.8, 0, 9.2], carried: 10 },
@@ -38,10 +38,10 @@ describe('end-of-tick result (spec 6.7)', () => {
     });
     const ev = run(s, { interact: true }, 1);
     expect(ev.map((e) => e.name)).toEqual(['deposit', 'lantern_lit', 'game_over']);
-    expect(ev[2]).toEqual({ tick: 1, name: 'game_over', data: { result: 'won', reason: 'all_lit' } });
+    expect(ev[2]).toEqual({ tick: 1, name: 'game_over', data: { result: 'won', reason: 'dawn_survived' } });
     expect(s.timeLeftS).toBe(0);
     expect(s.status).toBe('won');
-    expect(s.score).toBe(10 * 10 + 100 + 0 * 2 + 50 * 3);
+    expect(s.score).toBe(10 * 5 + 100 + 4 * 149 + 150 + 150); // Phase 3: 5/mote, dawn bonus per lit lantern + flames
   });
 
   it('flames 0 beats all lit and dawn in the same tick', () => {
@@ -59,6 +59,7 @@ describe('end-of-tick result (spec 6.7)', () => {
 
   it('no mid-tick end: a pulse after the winning deposit still runs, then the win is decided', () => {
     const s = bare({
+      time_left_s: 1 / 60,
       player: { pos: [0, 0, 0], carried: 4 },
       lanterns: [...fourLit, { id: 'L5', deposited: 9, pos: [0, 0, 1] }],
       shades: [{ pos: [0, 0, -4] }],
@@ -66,7 +67,7 @@ describe('end-of-tick result (spec 6.7)', () => {
     const ev = run(s, { interact: true, pulse: true }, 1);
     expect(ev.map((e) => e.name)).toEqual(['deposit', 'lantern_lit', 'pulse', 'game_over']);
     expect(s.status).toBe('won');
-    expect(s.score).toBe(10 + 100 + 5 + 2 * 299 + 50 * 3);
+    expect(s.score).toBe(5 + 100 + 5 + 4 * 149 + 150 + 150); // mote + lantern + stun + Phase 3 dawn bonus
   });
 
   it('dawn uses simTick and t0', () => {

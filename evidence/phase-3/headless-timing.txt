@@ -1,0 +1,4 @@
+headless toi da 21600 tick moi Dem (game dung o binh minh), --snapshot-every 1, scenario {random_shades:false, random_drifters:false}, seed 1
+night 1: 0.65 s, dong cuoi: {"type":"end","ticks":14400,"state":"lost","score":0}
+night 2: 0.73 s, dong cuoi: {"type":"end","ticks":16200,"state":"lost","score":0}
+night 3: 1.37 s, dong cuoi: {"type":"end","ticks":18000,"state":"lost","score":0}

@@ -18,18 +18,20 @@ interface Step { key: string; title: string; body: string; visual: string }
 
 const STEPS: Step[] = [
   { key: 'WASD', title: 'Nhặt đom đóm', visual: 'motes',
-    body: `Đi ngang qua đom đóm trong bán kính ${T.pickup_radius}m để nhặt. Mang tối đa ${T.carry_capacity} con một lúc.` },
+    body: `Đi ngang qua đom đóm trong bán kính ${T.pickup_radius}m để nhặt. Ban đầu mang được ${T.carry_capacity} con, mỗi lần thắp đèn thành công tăng thêm 2, tối đa ${T.capacity_max}.` },
   { key: 'E', title: 'Nạp vào đèn', visual: 'lantern',
-    body: `Đứng cách đèn chưa sáng trong ${T.interact_radius}m rồi bấm E. Mỗi đèn cần ${T.lantern_cost} đom đóm để bừng sáng.` },
+    body: `Đứng cách đèn chưa sáng trong ${T.interact_radius}m rồi bấm E. Thắp lần đầu cần ${T.lantern_cost} đom đóm, thắp lại đèn đã tắt chỉ tốn ${T.relight_cost}. Đèn đang sáng cũng nạp thêm dầu được.` },
   { key: 'F', title: 'Tỏa sáng', visual: 'pulse',
     body: `Bấm F để choáng và đẩy lùi Bóng Mực trong ${T.pulse_radius}m suốt ${T.pulse_stun_s} giây. Tốn ${T.pulse_cost} đom đóm, hồi ${T.pulse_cooldown_s} giây.` },
   { key: 'Đèn', title: 'Trú dưới ánh đèn', visual: 'dome',
-    body: `Bóng Mực không thể bước vào vùng ${T.safe_radius}m quanh một đèn đã sáng. Đó là chỗ nghỉ chân an toàn.` },
+    body: `Bóng Mực không thể bước vào vùng ${T.safe_radius}m quanh một đèn đã sáng và còn đủ dầu (từ ${T.low_fuel_threshold} trở lên). Đèn yếu dầu chớp nháy và không còn an toàn.` },
+  { key: 'Dầu', title: 'Giữ đèn đủ dầu', visual: 'lantern',
+    body: `Đèn sáng hao ${T.fuel_decay_per_s} dầu mỗi giây (tối đa ${T.fuel_max}), mỗi đom đóm châm thêm ${T.fuel_per_mote}. Bóng Mực hút dầu ${T.drain_per_s}/giây, hết dầu đèn sẽ tắt.` },
 ];
 
 const RULES: { icon: string; title: string; body: string }[] = [
-  { icon: 'lantern', title: 'Chiến thắng', body: `Thắp đủ ${T.lantern_count_night1} đèn lồng trước khi hết ${MINUTES} phút. Thời gian và máu còn lại được quy thành điểm thưởng.` },
-  { icon: 'sunrise', title: 'Thất bại', body: `Hết ${T.flames} máu, hoặc trời sáng trước khi đủ đèn.` },
+  { icon: 'lantern', title: 'Chiến thắng', body: `Sống sót tới bình minh (${MINUTES} phút) với ít nhất ${Math.round(T.win_ratio * 100)}% số đèn còn sáng. Mỗi đèn sáng và dầu còn lại cho điểm thưởng bình minh.` },
+  { icon: 'sunrise', title: 'Thất bại', body: `Mất hết ${T.flames} Ngọn Lửa, hoặc trời sáng khi chưa đủ ${Math.round(T.win_ratio * 100)}% đèn còn sáng.` },
   { icon: 'shade', title: 'Bóng Mực', body: `Bắt đầu với ${INITIAL_SHADES} con, cứ ${SPAWN_S} giây thêm một con, tối đa ${MAX_SHADES}. Chúng luôn đuổi theo bạn.` },
   { icon: 'heart', title: 'Khi bị chạm', body: `Mất 1 máu, đánh rơi ${Math.round(T.hit_drop_ratio * 100)}% số đom đóm đang mang, rồi được bất tử ${T.invuln_s} giây.` },
   { icon: 'island', title: 'Hòn đảo', body: `Đảo tròn bán kính ${ISLAND_RADIUS}m, mép đảo là tường vô hình nên bạn không thể rơi xuống biển.` },
@@ -62,8 +64,10 @@ function bento(): string {
           <li><span>Nhặt 1 đom đóm</span><b>+${S.per_mote}</b></li>
           <li><span>Thắp sáng 1 đèn</span><b>+${S.per_lantern}</b></li>
           <li><span>Choáng 1 Bóng Mực</span><b>+${S.per_stun}</b></li>
-          <li><span>Mỗi giây còn lại khi thắng</span><b>+${S.per_second_left}</b></li>
-          <li><span>Mỗi máu còn lại khi thắng</span><b>+${S.per_flame_left}</b></li>
+          <li><span>Thắp lại 1 đèn đã tắt</span><b>+${S.per_relight}</b></li>
+          <li><span>Choáng Bóng Mực đang hút dầu</span><b>+${S.per_stun_drain}</b></li>
+          <li><span>Mỗi đèn sáng lúc bình minh (+ dầu còn lại)</span><b>+${S.dawn_per_lantern}</b></li>
+          <li><span>Mỗi Ngọn Lửa còn lại khi thắng</span><b>+${S.per_flame_left}</b></li>
         </ul>`)}
       ${card('ln-card-camera', `
         <div class="ln-card-art ln-orbit" aria-hidden="true"><i></i></div>
@@ -83,7 +87,7 @@ export function guideSectionsMarkup(): string {
   return `
   <section class="ln-section" id="cach-choi">
     ${eyebrow('Cách chơi')}
-    <h2 class="ln-h2" data-reveal>Bốn việc giúp bạn sống sót qua đêm</h2>
+    <h2 class="ln-h2" data-reveal>Năm việc giúp bạn sống sót qua đêm</h2>
     <div class="ln-accordion" data-reveal>${accordion()}</div>
   </section>
 

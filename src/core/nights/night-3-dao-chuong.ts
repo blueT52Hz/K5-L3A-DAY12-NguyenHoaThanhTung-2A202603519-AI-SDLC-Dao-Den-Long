@@ -1,3 +1,4 @@
+import { TUNING } from '../tuning';
 import type { NightConfig } from './night-config-types';
 import { ringPoints } from './ring-points';
 
@@ -5,7 +6,7 @@ import { ringPoints } from './ring-points';
 export const NIGHT_3: NightConfig = {
   id: 3,
   name: 'Đảo Chuông',
-  durationS: 360,
+  durationS: TUNING.night3_duration_s,
   surfaces: [
     { kind: 'disc', cx: 0, cz: 0, r: 45, y: 0 },
     { kind: 'annulus', cx: 0, cz: 0, rIn: 12, rOut: 24, y: 3, zMinExclusive: 0 },

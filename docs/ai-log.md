@@ -61,3 +61,25 @@
 - Tốt: spec tách [CĐ]/[TQ] và sổ rulings giúp tài liệu Giả định khớp code; scenario headless cho từng tính năng làm bằng chứng nhanh và không phụ thuộc trình duyệt.
 - Chưa tốt: cắt test và review ở cuối làm mất lưới an toàn đúng lúc nhiều agent sửa song song; ước lượng thời gian cho web (model, âm thanh, HUD) thấp.
 - Lần sau: giữ test xanh làm cổng bắt buộc ở mỗi task, không dồn kiểm chứng web vào cuối.
+
+---
+
+# Phase 3 (đèn cạn dầu, contract v1.2)
+
+## Quy trình
+1. Đọc `phase-3.html`, brainstorming và spec `docs/superpowers/specs/2026-11-20-dao-den-long-phase3-design.md`; plan 8 task, chạy bằng subagent-driven (mỗi task một implementer, controller stage checkpoint).
+2. Task 1-7: contract, dầu, nạp/thắp lại/sức chứa, vùng an toàn theo dầu, Bóng Mực `drain`, luật thắng bình minh, web (thanh dầu, HUD, bảng màu dễ phân biệt). Task 8: test cũ, evidence, ADR, changelog, tài liệu.
+
+## Quyết định và giả định chính
+- Dầu là số nguyên đơn vị 1/60 để ngưỡng 30 và 0 không lệch tick (ADR 0001); điểm Phase 3 (5/100/40/5/15/50/50) là quyết định của người viết.
+- Không viết test mới (quyết định của chủ dự án vì thời gian); test cũ sai vì luật mới được sửa kỳ vọng (10 test) và ghi từng cái trong `CHANGELOG.md`, không skip.
+- Một test đã đỏ từ trước Phase 3 (rng ở Đêm 2 do Gió Lạc sinh lúc tick 1200) được sửa ở test, code giữ nguyên.
+
+## Kết quả
+- `npm run build` và `npm test` xanh (149 test); evidence `evidence/phase-3/` sinh bằng script, đủ 6 ca cạn dầu, châm dầu, thắp lại, drain, thắng và thua bình minh; determinism 3 Đêm byte-identical.
+- Chưa kiểm trình duyệt thật trong task này (web do Task 6-7 và người chủ dự án xem).
+
+## Retro Phase 3
+- Tốt: spec chốt rõ số nguyên và thứ tự tick trước khi code nên ít lệch; evidence bằng scenario nhỏ chạy nhanh.
+- Chưa tốt: không có test mới nên hành vi mới chỉ được bảo chứng bằng JSONL evidence.
+- Lần sau: giữ một test cho mỗi luật mới ngay trong task đó.

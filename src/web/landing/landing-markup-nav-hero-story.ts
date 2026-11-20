@@ -11,8 +11,8 @@ const MARQUEE_WORDS = ['Nhặt đom đóm', 'Thắp đèn lồng', 'Né Bóng M�
 
 const STORY =
   'Mỗi đêm, Bóng Mực tràn lên Đảo Bến và nuốt dần từng đốm sáng. Chỉ những con đom đóm còn sót lại ' +
-  `mới đủ sức thắp lại ${TUNING.lantern_count_night1} ngọn đèn cổ. Nếu đèn chưa sáng khi trời hửng, ` +
-  'hòn đảo sẽ chìm trong bóng tối thêm một năm nữa.';
+  `mới đủ sức thắp ${TUNING.lantern_count_night1} ngọn đèn cổ, nhưng dầu đèn cạn dần: phải tiếp dầu để giữ đèn cháy. ` +
+  'Nếu đến lúc trời hửng bạn còn sống và còn đủ đèn sáng, hòn đảo được cứu; nếu không, nó chìm trong bóng tối thêm một năm nữa.';
 
 function marqueeTrack(): string {
   const items = MARQUEE_WORDS.map((w) => `<span>${w}</span><i aria-hidden="true"></i>`).join('');
@@ -60,7 +60,7 @@ export function navHeroStoryMarkup(): string {
       </h1>
       <p class="ln-lede" data-hero-reveal>
         Vào vai Mây, người đội nón lá treo đèn lồng. Nhặt đom đóm, nạp vào
-        ${TUNING.lantern_count_night1} Đèn Lồng Lớn và giữ khoảng cách với Bóng Mực trong một đêm dài ${MINUTES} phút.
+        ${TUNING.lantern_count_night1} Đèn Lồng Lớn, tiếp dầu để đèn không tắt, và giữ khoảng cách với Bóng Mực trong một đêm dài ${MINUTES} phút.
       </p>
       <div class="ln-cta-row" data-hero-reveal>
         ${startButton('Bắt đầu chơi')}

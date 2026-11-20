@@ -2,7 +2,7 @@ import { PULSE_CENTER_DY, PULSE_PUSH_TICKS, TICK_RATE } from '../constants';
 import { TUNING } from '../tuning';
 import type { GameEvent, GameState, Vec3 } from '../types';
 import { pulseDrifters } from './drifter-ai';
-import { compareShadeIds } from './shade-ai';
+import { compareShadeIds } from './shade-id-order';
 import { unitXZ } from './shade-movement-terrain';
 
 /**
@@ -24,9 +24,12 @@ export function usePulse(s: GameState, events: GameEvent[]): void {
       sh.pushTicks = PULSE_PUSH_TICKS;
       sh.pushDir = unitXZ(center[0], center[2], sh.pos[0], sh.pos[2]);
     }
+    const wasDrain = sh.state === 'drain';
     sh.state = 'stunned';
+    sh.targetLanternId = null;
+    sh.drainTicks = 0;
     sh.stateTicks = Math.round(TUNING.pulse_stun_s * TICK_RATE);
-    s.score += TUNING.score.per_stun;
+    s.score += wasDrain ? TUNING.score.per_stun_drain : TUNING.score.per_stun;
   }
   pulseDrifters(s, center, events);
   p.pulseCooldownTicks = Math.round(TUNING.pulse_cooldown_s * TICK_RATE);

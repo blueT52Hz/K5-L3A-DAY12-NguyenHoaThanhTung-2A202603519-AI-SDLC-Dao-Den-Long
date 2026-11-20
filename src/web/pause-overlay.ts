@@ -25,10 +25,11 @@ export function initPause(root: HTMLElement, a: PauseActions): PauseOverlay {
     <table>
       <tr><td>W A S D / Space</td><td>Di chuyển / nhảy</td></tr>
       <tr><td>Shift</td><td>Lướt (${T.dash_cooldown_s}s hồi chiêu)</td></tr>
-      <tr><td>E</td><td>Nạp đèn (trong ${T.interact_radius}m)</td></tr>
+      <tr><td>E</td><td>Nạp / thắp lại (${T.relight_cost} đom đóm) / châm dầu đèn (trong ${T.interact_radius}m)</td></tr>
       <tr><td>F</td><td>Tỏa sáng (${T.pulse_radius}m, tốn ${T.pulse_cost} đom đóm)</td></tr>
       <tr><td>Kéo chuột / mũi tên</td><td>Xoay camera</td></tr>
       <tr><td>P / Esc</td><td>Tạm dừng / tiếp tục</td></tr>
+      <tr><td>Mục tiêu</td><td>Giữ &ge; ${Math.round(T.win_ratio * 100)}% đèn sáng tới bình minh; đèn cạn dầu sẽ tắt</td></tr>
     </table></div>`;
   root.appendChild(el);
   const wire: Record<string, () => void> = { resume: a.onResume, retry: a.onRetry, settings: a.onSettings, menu: a.onMenu };

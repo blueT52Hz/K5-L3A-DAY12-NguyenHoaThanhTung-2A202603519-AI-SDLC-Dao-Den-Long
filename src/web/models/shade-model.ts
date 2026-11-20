@@ -1,6 +1,7 @@
 import * as THREE from 'three';
+import { PALETTE } from './palette';
 
-/** Bóng Mực: squashed purple-black blob with two pale glowing eyes. Origin at center. */
+/** Bóng Mực: squashed purple-black blob with two glowing eyes (#7A3CFF). Origin at center. */
 export function createShadeModel(): THREE.Group {
   const g = new THREE.Group();
   const blob = new THREE.Mesh(
@@ -14,11 +15,21 @@ export function createShadeModel(): THREE.Group {
   rim.rotation.x = Math.PI / 2;
   rim.position.y = -0.5;
   g.add(blob, rim);
-  const eyeMat = new THREE.MeshStandardMaterial({ color: 0xe8e0ff, emissive: 0xcfc4ff, emissiveIntensity: 1.5 });
+  g.userData.rimMat = rim.material;
+  const eyeMat = new THREE.MeshStandardMaterial({ color: 0x7a3cff, emissive: 0x7a3cff, emissiveIntensity: 1.5 });
+  g.userData.eyeMat = eyeMat;
   for (const x of [-0.25, 0.25]) {
     const eye = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 6), eyeMat);
     eye.position.set(x, 0.1, 0.62);
     g.add(eye);
   }
   return g;
+}
+
+/** Colorblind palette: outline (rim) and eyes #00B3FF; default keeps #7A3CFF for rim and eyes. */
+export function setShadeColorblind(g: THREE.Object3D, cb: boolean): void {
+  const rim = g.userData.rimMat as THREE.MeshStandardMaterial | undefined;
+  const eye = g.userData.eyeMat as THREE.MeshStandardMaterial | undefined;
+  if (rim) { const c = cb ? PALETTE.shadeRimColorblind : PALETTE.shadeRim; rim.color.setHex(c); rim.emissive.setHex(c); }
+  if (eye) { const c = cb ? PALETTE.shadeRimColorblind : PALETTE.shadeRim; eye.color.setHex(c); eye.emissive.setHex(c); }
 }

@@ -3,8 +3,11 @@ import type { GameState } from '../core/types';
 import { getNight } from '../core/nights';
 import {
   createDrifterModel, createEnvironment, createJumpPadModel, createLanternModel, createMoteModel,
-  createPlayerModel, createShadeModel, createWindCharmModel, createWindLeaves,
+  createPlayerModel, createShadeModel, createWindCharmModel, createWindLeaves, setShadeColorblind,
 } from './models';
+import { isColorblind } from './colorblind-mode';
+import { TICK_RATE } from '../core/constants';
+import { fuelMaxUnits, isLowFuel } from '../core/systems/lantern-fuel';
 import { shortestAngle } from './player-facing';
 
 type LanternModel = ReturnType<typeof createLanternModel>;
@@ -92,6 +95,7 @@ export class SceneSync {
     this.syncById(this.shades, state.shades, () => cloneMaterials(createShadeModel()));
     for (const s of state.shades) {
       const obj = this.shades.get(s.id)!;
+      setShadeColorblind(obj, isColorblind());
       const stunned = s.state === 'stunned';
       const shake = stunned ? Math.sin(state.tick * 1.7) * 0.15 : 0;
       obj.position.set(s.pos[0] + shake, s.pos[1], s.pos[2]);
@@ -119,7 +123,9 @@ export class SceneSync {
 
     let lit = 0;
     for (const l of state.lanterns) {
-      this.lanterns.get(l.id)?.setLit(l.lit);
+      const lm = this.lanterns.get(l.id);
+      lm?.setLit(l.lit);
+      lm?.setFuel(l.fuelUnits / fuelMaxUnits(), isLowFuel(l), state.tick / TICK_RATE);
       if (l.lit) lit++;
     }
     this.env?.setBrightness(lit, state.lanterns.length);

@@ -69,9 +69,9 @@ describe('deposit', () => {
     const ev = run(s, { interact: true }, 1);
     expect(ev.map((e) => e.name)).toEqual(['deposit', 'lantern_lit']);
     expect(ev[0].data).toEqual({ lantern_id: 'L1', amount: 10, deposited: 10 });
-    expect(ev[1].data).toEqual({ lantern_id: 'L1' });
+    expect(ev[1].data).toEqual({ lantern_id: 'L1', relight: false });
     expect(s.player.carried).toBe(0);
-    expect(s.score).toBe(10 * 10 + 100); // v1.1: per_mote x amount at deposit + per_lantern
+    expect(s.score).toBe(10 * 5 + 100); // Phase 3: per_mote 5 x amount at deposit + per_lantern
     expect(s.lanterns[0].lit).toBe(true);
   });
   it('partial deposit does not light', () => {
@@ -87,8 +87,9 @@ describe('deposit', () => {
     expect(ev2.filter((e) => e.name === 'deposit')).toHaveLength(1);
     expect(t.player.carried).toBe(0); // cost 10 spent once; held button does not repeat
   });
-  it('wins on fifth lantern with time bonus', () => {
+  it('wins at dawn after lighting the fifth lantern (Phase 3: lighting alone does not end the game)', () => {
     const s = bare({
+      time_left_s: 1 / 60,
       player: { pos: [0, 0, 0], carried: 1 },
       lanterns: [
         { id: 'L1', lit: true }, { id: 'L2', lit: true }, { id: 'L3', lit: true }, { id: 'L4', lit: true },
@@ -97,8 +98,9 @@ describe('deposit', () => {
     });
     const ev = run(s, { interact: true }, 1);
     expect(ev.map((e) => e.name)).toEqual(['deposit', 'lantern_lit', 'game_over']);
-    expect(ev[2]).toEqual({ tick: 1, name: 'game_over', data: { result: 'won', reason: 'all_lit' } });
-    expect(s.score).toBe(10 + 100 + 2 * 299 + 50 * 3); // v1.1: +10 per deposited mote
+    expect(ev[2]).toEqual({ tick: 1, name: 'game_over', data: { result: 'won', reason: 'dawn_survived' } });
+    // 5 (mote) + 100 (lantern) + 4 x (50 + 99 fuel) + (50 + 100 fuel) + 50 x 3 flames
+    expect(s.score).toBe(5 + 100 + 4 * 149 + 150 + 150);
     expect(s.status).toBe('won');
   });
 });
@@ -116,6 +118,6 @@ describe('time clamp', () => {
     run(s, { interact: true }, 1);
     expect(s.status).toBe('won');
     expect(s.timeLeftS).toBe(0);
-    expect(s.score).toBe(10 + 100 + 50 * 3); // v1.1: +10 per deposited mote
+    expect(s.score).toBe(5 + 100 + 4 * 149 + 150 + 150); // Phase 3 dawn bonus (see fifth-lantern test)
   });
 });

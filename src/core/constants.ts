@@ -59,3 +59,9 @@ export const WIND_PERIOD_TICKS = 1800;
 export const WIND_DURATION_TICKS = 300;
 export const WIND_WARN_TICKS = 120;
 export const WIND_SPEED = 2;
+
+// Lantern fuel (Phase 3)
+export const FUEL_UNITS_PER_FUEL = 60;
+export const DRAIN_RANGE_M = 2;
+export const DRAIN_CHASE_RADIUS = 6;
+export const FUEL_DRAIN_EVENT_TICKS = 60;
