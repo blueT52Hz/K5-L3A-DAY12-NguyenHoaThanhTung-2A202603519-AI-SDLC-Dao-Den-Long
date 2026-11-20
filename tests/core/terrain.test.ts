@@ -43,5 +43,25 @@ describe('terrain queries', () => {
     expect(canWalkTo(n, 0, 41, 0, true)).toBe(true);
     expect(canWalkTo(n, 0, 10, 0, false)).toBe(true);
   });
-});
 
+  it('every night start is walkable ground at its own height', () => {
+    for (const id of [1, 2, 3] as const) {
+      const n = getNight(id);
+      const [x, y, z] = n.start;
+      expect(isWall(n, x, z, y)).toBe(false);
+      expect(groundBelow(n, x, z, y)).toBe(y);
+    }
+  });
+
+  it('Night 2 second pad launches toward (0,0,0) at 24 m/s', () => {
+    const pad = getNight(2).jumpPads[1];
+    expect(Math.hypot(pad.horiz[0], pad.horiz[1])).toBeCloseTo(24, 9);
+    const d = Math.hypot(pad.pos[0], pad.pos[2]);
+    expect(pad.horiz[0]).toBeCloseTo((-pad.pos[0] / d) * 24, 9);
+    expect(pad.horiz[1]).toBeCloseTo((-pad.pos[2] / d) * 24, 9);
+  });
+
+  it('Night 3 tier 1 excludes z = 0 (zMinExclusive)', () => {
+    expect(groundBelow(getNight(3), 18, 0, 3)).toBe(0);
+  });
+});

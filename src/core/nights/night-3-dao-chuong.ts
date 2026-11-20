@@ -14,7 +14,7 @@ export const NIGHT_3: NightConfig = {
     { kind: 'ramp', angleDeg: 150, width: 3, rFrom: 30, rTo: 24, yFrom: 0, yTo: 3 },
   ],
   obstacles: [{ cx: 0, cz: 0, r: 2, yTop: 14 }],
-  start: [0, 0, 0],
+  start: [0, 0, -20], // (0,0,0) is inside the tier-2 disc and the tower
   startFacing: [0, 1],
   lanterns: [
     { id: 'L1', pos: [0, 6, 6] },
