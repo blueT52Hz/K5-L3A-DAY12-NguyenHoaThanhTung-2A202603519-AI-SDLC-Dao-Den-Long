@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Demo trang trí đảo (dev)</title>
+    <style>
+      html, body { margin: 0; height: 100%; overflow: hidden; background: #0b0f1a; font-family: sans-serif; color: #eee; }
+      #scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+      #panel { position: fixed; top: 0; right: 0; width: 220px; padding: 12px; background: rgba(0,0,0,.6); display: flex; flex-direction: column; gap: 8px; font-size: 14px; }
+      #panel h3 { margin: 0; font-size: 15px; }
+      #panel input[type=range] { width: 100%; }
+      #fps { position: fixed; bottom: 8px; left: 8px; font: 12px monospace; background: rgba(0,0,0,.6); padding: 4px 8px; }
+    </style>
+  </head>
+  <body>
+    <canvas id="scene"></canvas>
+    <aside id="panel"></aside>
+    <div id="fps"></div>
+    <script type="module" src="/src/web/decor-demo/decor-demo-main.ts"></script>
+  </body>
+</html>

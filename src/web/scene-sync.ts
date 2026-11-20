@@ -2,19 +2,22 @@ import * as THREE from 'three';
 import type { GameState } from '../core/types';
 import { getNight } from '../core/nights';
 import {
-  createDrifterModel, createEnvironment, createJumpPadModel, createLanternModel, createMoteModel,
-  createPlayerModel, createShadeModel, createWindCharmModel, createWindLeaves, setShadeColorblind,
+  createDrifterModel, createJumpPadModel, createLanternModel, createMoteModel,
+  createShadeModel, createWindCharmModel, createWindLeaves, setShadeColorblind,
 } from './models';
 import { isColorblind } from './colorblind-mode';
 import { TICK_RATE } from '../core/constants';
 import { fuelMaxUnits, isLowFuel } from '../core/systems/lantern-fuel';
 import { shortestAngle } from './player-facing';
+import { NightDecorEnvironment } from './night-decor-environment';
+import { PlayerMayAnimatedVisual } from './player-may-animated-visual';
 
 type LanternModel = ReturnType<typeof createLanternModel>;
 
 /** Owns scene entities and mirrors GameState into them. */
 export class SceneSync {
   private root = new THREE.Group();
+  private may: PlayerMayAnimatedVisual;
   private player: THREE.Group;
   private lanterns = new Map<string, LanternModel>();
   private motes = new Map<string, THREE.Object3D>();
@@ -23,26 +26,16 @@ export class SceneSync {
   private charms = new Map<string, THREE.Object3D>();
   private pads: THREE.Object3D[] = [];
   private leaves = createWindLeaves();
-  private env: { setBrightness(lit: number, total?: number): void } | null = null;
-  private envObjects: THREE.Object3D[] = [];
-  private envNight = 0;
+  private decor: NightDecorEnvironment;
   private lastWind = { x: 1, z: 0 };
 
-  constructor(private scene: THREE.Scene, private pointLights = true) {
-    this.player = createPlayerModel(pointLights);
+  constructor(scene: THREE.Scene, private pointLights = true) {
+    this.may = new PlayerMayAnimatedVisual(pointLights); // hat-lantern light only when PointLights are allowed
+    this.player = this.may.group;
+    this.decor = new NightDecorEnvironment(scene, !pointLights); // CPU mode -> low-quality decor
     scene.add(this.root);
     this.root.add(this.player);
     this.root.add(this.leaves.points);
-  }
-
-  /** Build terrain/lights for the night; the previous night's environment is removed. */
-  private buildEnvironment(night: GameState['night']): void {
-    if (this.envNight === night) return;
-    for (const o of this.envObjects) { this.scene.remove(o); disposeTree(o); }
-    const before = new Set(this.scene.children);
-    this.env = createEnvironment(this.scene, getNight(night), !this.pointLights);
-    this.envObjects = this.scene.children.filter((c) => !before.has(c));
-    this.envNight = night;
   }
 
   /** Rebuild all entities from a fresh state (initial load and restart). */
@@ -59,7 +52,7 @@ export class SceneSync {
     this.drifters.clear();
     this.charms.clear();
     this.pads = [];
-    this.buildEnvironment(state.night);
+    this.decor.rebuild(state.night); // island decor: terrain, sky, fog, lights, props (old one disposed)
     for (const p of getNight(state.night).jumpPads) {
       const pad = createJumpPadModel(p.r);
       pad.position.set(...p.pos);
@@ -80,13 +73,22 @@ export class SceneSync {
     this.player.rotation.y = rad;
   }
 
-  /** Per-frame animation (wind leaves). */
+  /** Per-frame animation at render rate (wind leaves, island decor, Mây's walk cycle). */
   animate(dtS: number): void {
     this.leaves.update(dtS, this.lastWind.x, this.lastWind.z);
+    this.decor.update(dtS);
+    this.may.animate(dtS);
+  }
+
+  /** Free the decor and the player character (e.g. when the game view is torn down). */
+  dispose(): void {
+    this.decor.dispose();
+    this.may.dispose();
   }
 
   sync(state: GameState): void {
     this.player.position.set(...state.player.pos);
+    this.may.setFromPlayer(state.player);
     this.player.visible = !(state.player.invulnTicks > 0 && state.tick % 8 < 4); // blink when hit
 
     this.syncById(this.motes, state.motes, createMoteModel);
@@ -121,14 +123,12 @@ export class SceneSync {
     this.lastWind = { x: Math.cos(rad), z: Math.sin(rad) };
     this.leaves.points.position.set(state.player.pos[0], 0, state.player.pos[2]);
 
-    let lit = 0;
     for (const l of state.lanterns) {
       const lm = this.lanterns.get(l.id);
       lm?.setLit(l.lit);
       lm?.setFuel(l.fuelUnits / fuelMaxUnits(), isLowFuel(l), state.tick / TICK_RATE);
-      if (l.lit) lit++;
     }
-    this.env?.setBrightness(lit, state.lanterns.length);
+    this.decor.syncLanterns(state.lanterns); // ambient 0.15 + 0.55 x lit/total, glow rings, lit tint
   }
 
   private syncById<T extends { id: string }>(
