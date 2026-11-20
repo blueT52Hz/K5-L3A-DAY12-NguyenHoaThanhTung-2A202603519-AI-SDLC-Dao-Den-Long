@@ -3,7 +3,7 @@ import * as THREE from 'three';
 /** Đèn Lồng Lớn: wooden post + lantern cage. setLit toggles emissive and a PointLight. */
 export function createLanternModel(withLight = true): { group: THREE.Group; setLit(lit: boolean): void } {
   const group = new THREE.Group();
-  const wood = new THREE.MeshStandardMaterial({ color: 0x8a5a32, roughness: 0.9, emissive: 0x2a1608, emissiveIntensity: 0.6 });
+  const wood = new THREE.MeshStandardMaterial({ color: 0x6b4a32, roughness: 0.9, emissive: 0x2a1608, emissiveIntensity: 0.6 });
   const post = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.16, 2.2, 8), wood);
   post.position.y = 1.1;
   const arm = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.08, 0.08), wood);
@@ -26,7 +26,7 @@ export function createLanternModel(withLight = true): { group: THREE.Group; setL
   return {
     group,
     setLit(lit: boolean) {
-      cageMat.color.setHex(lit ? 0xffc470 : 0xc9a77a);
+      cageMat.color.setHex(lit ? 0xffe9b0 : 0x5b5f6e);
       cageMat.emissiveIntensity = lit ? 2.6 : 0.12;
       light.intensity = lit ? 60 : 0;
     },

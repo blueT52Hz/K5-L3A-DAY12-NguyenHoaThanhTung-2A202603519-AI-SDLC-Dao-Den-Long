@@ -26,8 +26,9 @@ export interface GameEvent { tick: number; name: string; data: Record<string, un
 export interface GameState { night: NightId; tick: number; simTick: number; paused: boolean; status: GameStatus; t0: number; timeLeftS: number; score: number;
   player: Player; motes: Mote[]; shades: Shade[]; lanterns: Lantern[]; drifters: Drifter[]; charms: Charm[]; wind: WindState;
   rngState: number; nextMoteId: number; nextShadeId: number; nextDrifterId: number;
-  // Interim (removed when the simTick-based spawn schedule lands): countdown to the next shade spawn.
-  spawnTicks: number; spawnEnabled: boolean;
+  // shadeSpawnEnabled: scheduled shade spawns (scenario random_shades:false turns them off).
+  // safeZoneLanternIds: lit lanterns whose safe zone updateSafeZones has already seen (a lit lantern not in it was just lit).
+  shadeSpawnEnabled: boolean; safeZoneLanternIds: string[];
   windEnabled: boolean; drifterSpawnEnabled: boolean; moteSpawnEnabled: boolean;
   prevButtons: { jump: boolean; interact: boolean; pulse: boolean; dash: boolean; pause: boolean } }
 export interface Scenario {

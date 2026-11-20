@@ -19,7 +19,8 @@ describe('cli errors', () => {
     expect(r.code).toBe(1);
     expect(r.stderr).not.toBe('');
   });
-  it('night != 1 -> 1', () => expect(runHeadless(base().map((v, i, a) => (a[i - 1] === '--night' ? '2' : v))).code).toBe(1));
+  it('--night 4 -> 1', () => expect(runHeadless(base().map((v, i, a) => (a[i - 1] === '--night' ? '4' : v))).code).toBe(1));
+  it('--night 2 -> 0', () => expect(runHeadless(base().map((v, i, a) => (a[i - 1] === '--night' ? '2' : v))).code).toBe(0));
   it('bad files -> 2', () => {
     expect(runHeadless(base(['--inputs', file('a.json', '{oops')])).code).toBe(2);
     expect(runHeadless(base(['--inputs', file('b.json', { frames: [{ tick: 5 }, { tick: 5 }] })])).code).toBe(2);

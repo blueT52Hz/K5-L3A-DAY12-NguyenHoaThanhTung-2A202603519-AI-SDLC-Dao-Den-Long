@@ -22,8 +22,8 @@ export function runHeadless(argv: string[]): { code: number; lines: string[]; st
     const a = parseArgs(argv);
     const scenario = a.scenario ? parseScenario(readJson(a.scenario)) : undefined;
     const frames = a.inputs ? parseInputs(readJson(a.inputs)) : [];
-    const s = createGame(a.seed, scenario);
-    const lines: string[] = [snapshotLine(s)];
+    const s = createGame(a.seed, scenario, a.night);
+    const lines: string[] = [snapshotLine(s), eventLine({ tick: 0, name: 'night_start', data: { night: a.night } })];
     const cur: InputFrame = { move: [0, 0], cam_yaw_deg: 0, jump: false, interact: false, pulse: false, dash: false, pause: false };
     let fi = 0;
     let lastSnap = 0;

@@ -7,11 +7,14 @@ import { spawnScheduledMote } from './systems/mote-spawner';
 import { computeEdges, handlePause } from './systems/pause-control';
 import { checkFall } from './systems/player-fall-respawn';
 import { checkHit } from './systems/player-hit';
+import { startDashIfRequested } from './systems/player-dash';
 import { movePlayer } from './systems/player-movement';
 import { usePulse } from './systems/pulse';
-import { moveShades, spawnShades } from './systems/shade-ai';
+import { moveShades } from './systems/shade-ai';
+import { spawnShades } from './systems/shade-spawner';
 import { updateSafeZones } from './systems/shade-zones';
 import { tickTimers } from './systems/timers';
+import { updateWind } from './systems/wind-gusts';
 import { resolveEndOfTick } from './systems/win-lose';
 import type { GameEvent, GameState, InputFrame } from './types';
 
@@ -30,7 +33,9 @@ export function step(s: GameState, input: InputFrame): GameEvent[] {
   s.simTick += 1;
   s.timeLeftS = Math.max(0, s.t0 - s.simTick / TICK_RATE);
   tickTimers(s); // 2
-  movePlayer(s, input, edges); // 3
+  updateWind(s); // 3
+  startDashIfRequested(s, input, edges, events);
+  movePlayer(s, input, edges);
   checkFall(s, events);
   pickupMotes(s, events); // 4
   pickupCharms(s, events);

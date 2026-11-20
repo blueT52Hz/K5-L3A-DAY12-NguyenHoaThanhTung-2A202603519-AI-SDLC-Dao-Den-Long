@@ -1,0 +1,4 @@
+headless 21600 tick moi Dem, --snapshot-every 1, scenario {random_shades:false, random_drifters:false}, seed 1
+night 1: 0.76 s, dong cuoi: {"type":"end","ticks":18000,"state":"lost","score":0}
+night 2: 0.82 s, dong cuoi: {"type":"end","ticks":19800,"state":"lost","score":0}
+night 3: 1.17 s, dong cuoi: {"type":"end","ticks":21600,"state":"lost","score":0}

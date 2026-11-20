@@ -1,0 +1,10 @@
+FPS measurement (rAF counting), 1280x720, headless Chromium via Playwright, software GL (SwiftShader/ANGLE).
+Game auto-detects the software renderer and uses CPU quality (no AA, pixel ratio 0.85, no point lights).
+NOTE: headless SwiftShader FPS is far below a real GPU; a real GPU/desktop browser will differ (usually much higher).
+Player holds W with strafing during measurement; window 15s per night.
+
+Night 1: avg FPS 41.4 over 15s (renderer: ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver))
+Night 2: avg FPS 46.2 over 15s (renderer: ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver))
+Night 3: avg FPS 31.9 over 15s (renderer: ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver))
+
+Console/page errors: 0

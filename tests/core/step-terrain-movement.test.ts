@@ -50,7 +50,7 @@ describe('fall and respawn', () => {
   });
 
   it('Night 2: walking +Z off the bridge falls (bridge has no rails)', () => {
-    const s = bare(2, { player: { pos: [35, 0, 0] } });
+    const s = bare(2, { player: { pos: [35, 0, 0] }, charms: [] }); // no charm: the start spot is where C1 sits
     run(s, { move: [0, 1] }, 40);
     expect(s.player.pos[2]).toBeCloseTo(4, 9);
     expect(s.player.pos[1]).toBeLessThan(0);

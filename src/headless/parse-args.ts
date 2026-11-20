@@ -1,7 +1,8 @@
+import type { NightId } from '../core/types';
 import { UsageError } from './errors';
 
 export interface HeadlessArgs {
-  seed: number; ticks: number; out: string; every: number; scenario?: string; inputs?: string;
+  seed: number; ticks: number; out: string; every: number; scenario?: string; inputs?: string; night: NightId;
 }
 
 function intOf(name: string, v: string | undefined, min: number): number {
@@ -22,7 +23,8 @@ export function parseArgs(argv: string[]): HeadlessArgs {
   for (const req of ['--seed', '--ticks', '--out']) {
     if (!m.has(req)) throw new UsageError(`missing required ${req}`);
   }
-  if (m.has('--night') && m.get('--night') !== '1') throw new UsageError('only --night 1 is supported');
+  const nightArg = m.get('--night') ?? '1';
+  if (!['1', '2', '3'].includes(nightArg)) throw new UsageError('--night must be 1, 2 or 3');
   return {
     seed: intOf('--seed', m.get('--seed'), -Infinity),
     ticks: intOf('--ticks', m.get('--ticks'), 0),
@@ -30,5 +32,6 @@ export function parseArgs(argv: string[]): HeadlessArgs {
     every: m.has('--snapshot-every') ? intOf('--snapshot-every', m.get('--snapshot-every'), 1) : 10,
     scenario: m.get('--scenario'),
     inputs: m.get('--inputs'),
+    night: Number(nightArg) as NightId,
   };
 }

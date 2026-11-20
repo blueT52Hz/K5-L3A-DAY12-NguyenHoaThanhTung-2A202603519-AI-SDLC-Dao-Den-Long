@@ -1,7 +1,9 @@
 import * as THREE from 'three';
 import type { GameState } from '../core/types';
+import { getNight } from '../core/nights';
 import {
-  createEnvironment, createLanternModel, createMoteModel, createPlayerModel, createShadeModel,
+  createDrifterModel, createEnvironment, createJumpPadModel, createLanternModel, createMoteModel,
+  createPlayerModel, createShadeModel, createWindCharmModel, createWindLeaves,
 } from './models';
 import { shortestAngle } from './player-facing';
 
@@ -14,13 +16,30 @@ export class SceneSync {
   private lanterns = new Map<string, LanternModel>();
   private motes = new Map<string, THREE.Object3D>();
   private shades = new Map<string, THREE.Object3D>();
-  private env: { setBrightness(litCount: number): void };
+  private drifters = new Map<string, THREE.Object3D>();
+  private charms = new Map<string, THREE.Object3D>();
+  private pads: THREE.Object3D[] = [];
+  private leaves = createWindLeaves();
+  private env: { setBrightness(lit: number, total?: number): void } | null = null;
+  private envObjects: THREE.Object3D[] = [];
+  private envNight = 0;
+  private lastWind = { x: 1, z: 0 };
 
   constructor(private scene: THREE.Scene, private pointLights = true) {
     this.player = createPlayerModel(pointLights);
-    this.env = createEnvironment(scene, !pointLights);
     scene.add(this.root);
     this.root.add(this.player);
+    this.root.add(this.leaves.points);
+  }
+
+  /** Build terrain/lights for the night; the previous night's environment is removed. */
+  private buildEnvironment(night: GameState['night']): void {
+    if (this.envNight === night) return;
+    for (const o of this.envObjects) { this.scene.remove(o); disposeTree(o); }
+    const before = new Set(this.scene.children);
+    this.env = createEnvironment(this.scene, getNight(night), !this.pointLights);
+    this.envObjects = this.scene.children.filter((c) => !before.has(c));
+    this.envNight = night;
   }
 
   /** Rebuild all entities from a fresh state (initial load and restart). */
@@ -28,9 +47,22 @@ export class SceneSync {
     for (const o of this.motes.values()) this.root.remove(o); // motes share geometry/material: no dispose
     for (const o of this.shades.values()) { this.root.remove(o); disposeTree(o); }
     for (const l of this.lanterns.values()) { this.root.remove(l.group); disposeTree(l.group); }
+    for (const o of this.drifters.values()) { this.root.remove(o); disposeTree(o); }
+    for (const o of this.charms.values()) { this.root.remove(o); disposeTree(o); }
+    for (const o of this.pads) { this.root.remove(o); disposeTree(o); }
     this.motes.clear();
     this.shades.clear();
     this.lanterns.clear();
+    this.drifters.clear();
+    this.charms.clear();
+    this.pads = [];
+    this.buildEnvironment(state.night);
+    for (const p of getNight(state.night).jumpPads) {
+      const pad = createJumpPadModel(p.r);
+      pad.position.set(...p.pos);
+      this.root.add(pad);
+      this.pads.push(pad);
+    }
     for (const l of state.lanterns) {
       const model = createLanternModel(this.pointLights);
       model.group.position.set(...l.pos);
@@ -43,6 +75,11 @@ export class SceneSync {
   /** Visual-only heading of the player model (rad about Y; 0 faces +Z). */
   setPlayerFacing(rad: number): void {
     this.player.rotation.y = rad;
+  }
+
+  /** Per-frame animation (wind leaves). */
+  animate(dtS: number): void {
+    this.leaves.update(dtS, this.lastWind.x, this.lastWind.z);
   }
 
   sync(state: GameState): void {
@@ -65,12 +102,27 @@ export class SceneSync {
       }
     }
 
+    this.syncById(this.drifters, state.drifters.filter((d) => d.state !== 'removed'), createDrifterModel);
+    for (const d of state.drifters) this.drifters.get(d.id)?.position.set(...d.pos);
+    this.syncById(this.charms, state.charms, createWindCharmModel);
+    for (const c of state.charms) {
+      const o = this.charms.get(c.id)!;
+      o.position.set(...c.pos);
+      o.visible = c.available;
+      o.rotation.y = state.tick * 0.03;
+    }
+    const w = state.wind;
+    this.leaves.setState(w.active ? 'active' : w.warning ? 'warning' : 'off');
+    const rad = (w.dirDeg * Math.PI) / 180;
+    this.lastWind = { x: Math.cos(rad), z: Math.sin(rad) };
+    this.leaves.points.position.set(state.player.pos[0], 0, state.player.pos[2]);
+
     let lit = 0;
     for (const l of state.lanterns) {
       this.lanterns.get(l.id)?.setLit(l.lit);
       if (l.lit) lit++;
     }
-    this.env.setBrightness(lit);
+    this.env?.setBrightness(lit, state.lanterns.length);
   }
 
   private syncById<T extends { id: string }>(
@@ -80,7 +132,7 @@ export class SceneSync {
     for (const [id, obj] of map) {
       if (!alive.has(id)) {
         this.root.remove(obj);
-        if (map === this.shades) disposeTree(obj); // shades own their geometry + cloned materials
+        if (map !== this.motes) disposeTree(obj); // shades own their geometry + cloned materials
         map.delete(id);
       }
     }
