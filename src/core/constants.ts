@@ -1,0 +1,10 @@
+export const ISLAND_RADIUS = 40;
+export const LANTERN_RING_RADIUS = 25;
+export const MOTE_COUNT = 40;
+export const INITIAL_SHADES = 2;
+export const MAX_SHADES = 6;
+export const SHADE_SPAWN_TICKS = 2700;
+export const SHADE_Y = 1.0;
+export const JUMP_VELOCITY = 7;
+export const GRAVITY = -20;
+export const TICK_RATE = 60;
