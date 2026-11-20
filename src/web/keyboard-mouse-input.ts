@@ -1,23 +1,35 @@
 import type { InputFrame } from '../core/types';
-import { isPaused } from './pause-overlay';
 
 const held = new Set<string>();
 let yawDeg = 0;
 let dragging = false;
 let restartRequested = false;
+let pauseQueued = false;
+let locked = true; // true unless a night is actively being played (not paused)
+let mouseSens = 1;
 const YAW_KEY_SPEED_DEG_S = 120;
 const YAW_MOUSE_DEG_PER_PX = 0.3;
+
+/** Gate gameplay input (menus, paused core): held keys are dropped while locked. */
+export function setInputLocked(v: boolean): void {
+  if (v && !locked) clearInput();
+  locked = v;
+}
+export function setMouseSensitivity(v: number): void { mouseSens = v; }
+/** Queue a pause toggle; sent to core as one-tick edge on the next readInput. */
+export function requestPause(): void { pauseQueued = true; }
 
 /** Drop all held keys and drag state (called when pausing so nothing sticks). */
 export function clearInput(): void {
   held.clear();
   dragging = false;
   restartRequested = false;
+  pauseQueued = false;
 }
 
 export function initInput(target: HTMLElement): void {
   window.addEventListener('keydown', (e) => {
-    if (isPaused()) return; // only P/Esc (handled by pause overlay) act while paused
+    if (locked) return;
     const k = e.code;
     if (k === 'KeyR' && !e.repeat) restartRequested = true;
     if (['Space', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(k)) e.preventDefault();
@@ -25,10 +37,10 @@ export function initInput(target: HTMLElement): void {
   });
   window.addEventListener('keyup', (e) => held.delete(e.code));
   window.addEventListener('blur', () => held.clear());
-  target.addEventListener('mousedown', () => { if (!isPaused()) dragging = true; });
+  target.addEventListener('mousedown', () => { if (!locked) dragging = true; });
   window.addEventListener('mouseup', () => { dragging = false; });
   window.addEventListener('mousemove', (e) => {
-    if (dragging && !isPaused()) yawDeg -= e.movementX * YAW_MOUSE_DEG_PER_PX;
+    if (dragging && !locked) yawDeg -= e.movementX * YAW_MOUSE_DEG_PER_PX * mouseSens;
   });
 }
 
@@ -57,6 +69,8 @@ export function readInput(camYawDeg: number): InputFrame {
   if (held.has('KeyS')) z -= 1;
   if (held.has('KeyA')) x += 1;
   if (held.has('KeyD')) x -= 1;
+  const pause = pauseQueued;
+  pauseQueued = false;
   const len = Math.hypot(x, z);
   if (len > 1) { x /= len; z /= len; }
   return {
@@ -65,7 +79,7 @@ export function readInput(camYawDeg: number): InputFrame {
     jump: held.has('Space'),
     interact: held.has('KeyE'),
     pulse: held.has('KeyF'),
-    dash: false, // wired in the web-shell task
-    pause: false,
+    dash: held.has('ShiftLeft') || held.has('ShiftRight'),
+    pause,
   };
 }
