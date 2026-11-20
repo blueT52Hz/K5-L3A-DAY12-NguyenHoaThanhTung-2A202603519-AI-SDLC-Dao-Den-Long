@@ -1,0 +1,119 @@
+/* Landing foundation: tokens, grain, island buttons, eyebrow pills, double-bezel shells, fluid nav + menu.
+   Vibe: "Ethereal Glass" at night - OLED ink, violet mesh orbs, lantern-amber light, hairline glass. */
+:root {
+  --ln-night: #06030c;
+  --ln-ink: #120a1f;
+  --ln-ink-2: #1b1030;
+  --ln-amber: #ffb35c;
+  --ln-amber-soft: #ffc98a;
+  --ln-cream: #fff1de;
+  --ln-violet: #c9a7ff;
+  --ln-muted: rgba(255, 241, 222, 0.62);
+  --ln-hair: rgba(255, 255, 255, 0.07);
+  --ln-hair-strong: rgba(255, 255, 255, 0.12);
+  --ln-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --ln-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --ln-display: 'Plus Jakarta Sans', 'Be Vietnam Pro', system-ui, sans-serif;
+  --ln-font: 'Be Vietnam Pro', system-ui, sans-serif;
+  --ln-radius: 2rem;
+  --ln-bezel: 6px;
+}
+
+html { scroll-behavior: smooth; }
+body.ln-active { overflow-x: hidden; overflow-y: auto; background: var(--ln-night); }
+body.ln-menu-open { overflow: hidden; }
+#landing { position: relative; z-index: 10; transform-origin: 50% 0; }
+.ln-main {
+  overflow-x: hidden; width: 100%; max-width: 100%; color: var(--ln-cream); font-family: var(--ln-font);
+  -webkit-font-smoothing: antialiased;
+  background:
+    radial-gradient(56rem 40rem at 88% 32%, rgba(124, 58, 237, 0.13), transparent 70%),
+    radial-gradient(48rem 32rem at 6% 62%, rgba(255, 138, 42, 0.06), transparent 70%),
+    radial-gradient(60rem 36rem at 70% 88%, rgba(91, 33, 182, 0.12), transparent 70%),
+    var(--ln-night);
+}
+.ln-main *, .ln-main *::before, .ln-main *::after { box-sizing: border-box; }
+.ln-main h1, .ln-main h2, .ln-main h3, .ln-main p { margin: 0; }
+.ln-main h1, .ln-main h2, .ln-main h3 { font-family: var(--ln-display); }
+.ln-main a { color: inherit; text-decoration: none; }
+
+/* Film grain on a fixed, non-interactive layer (never on scrolling content). */
+.ln-grain { position: fixed; inset: 0; z-index: 30; pointer-events: none; opacity: 0.05; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+/* Island buttons: pill + nested trailing icon circle with kinetic hover. */
+.ln-btn {
+  display: inline-flex; align-items: center; gap: 14px; font: 600 16px/1 var(--ln-font); letter-spacing: -0.005em;
+  border-radius: 999px; border: 0; cursor: pointer; white-space: nowrap;
+  transition: transform 0.6s var(--ln-ease), box-shadow 0.6s var(--ln-ease), background-color 0.5s var(--ln-ease), color 0.5s var(--ln-ease);
+}
+.ln-btn:active { transform: scale(0.98); }
+.ln-btn-md { padding: 7px 7px 7px 26px; min-height: 56px; }
+.ln-btn-sm { padding: 5px 5px 5px 18px; min-height: 44px; font-size: 14px; gap: 10px; }
+.ln-btn-xl { padding: 9px 9px 9px 36px; min-height: 72px; font-size: 19px; gap: 20px; }
+.ln-btn-ghost { padding-right: 26px; }
+.ln-btn-sm .ln-btn-icon { width: 34px; height: 34px; }
+.ln-btn-xl .ln-btn-icon { width: 54px; height: 54px; }
+.ln-btn-primary { background: var(--ln-amber); color: #1c0d03;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 18px 50px -18px rgba(255, 150, 50, 0.6); }
+.ln-btn-primary:hover { background: var(--ln-amber-soft); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 24px 70px -16px rgba(255, 150, 50, 0.8); }
+.ln-btn-icon { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; flex: none;
+  background: rgba(28, 13, 3, 0.1); transition: transform 0.6s var(--ln-spring), background-color 0.5s var(--ln-ease); }
+.ln-btn:hover .ln-btn-icon { transform: translate(3px, -1px) scale(1.06); background: rgba(28, 13, 3, 0.16); }
+.ln-btn-ghost { color: var(--ln-cream); background: rgba(255, 255, 255, 0.04); box-shadow: inset 0 0 0 1px var(--ln-hair-strong); }
+.ln-btn-ghost:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+.ln-btn:focus-visible, .ln-shell:focus-visible, .ln-burger:focus-visible { outline: 1.5px solid var(--ln-violet); outline-offset: 4px; }
+
+/* Eyebrow pill above headings. */
+.ln-eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px;
+  font: 500 10.5px/1 var(--ln-font); letter-spacing: 0.2em; text-transform: uppercase; color: var(--ln-amber-soft);
+  background: rgba(255, 179, 92, 0.06); box-shadow: inset 0 0 0 1px rgba(255, 179, 92, 0.16); margin-bottom: 28px; }
+.ln-eyebrow i { width: 5px; height: 5px; border-radius: 50%; background: var(--ln-amber); box-shadow: 0 0 8px var(--ln-amber); }
+
+/* Double-bezel: hairline outer tray + inner glass core with concentric radius and top highlight. */
+.ln-shell { position: relative; padding: var(--ln-bezel); border-radius: var(--ln-radius);
+  background: rgba(255, 255, 255, 0.025); box-shadow: inset 0 0 0 1px var(--ln-hair);
+  transition: box-shadow 0.7s var(--ln-ease), background-color 0.7s var(--ln-ease); }
+.ln-core { position: relative; height: 100%; overflow: hidden; border-radius: calc(var(--ln-radius) - var(--ln-bezel));
+  background: linear-gradient(165deg, var(--ln-ink-2) 0%, var(--ln-ink) 70%);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.03); }
+.ln-shell:hover { background: rgba(255, 179, 92, 0.04);
+  box-shadow: inset 0 0 0 1px rgba(255, 179, 92, 0.18), 0 40px 100px -50px rgba(255, 140, 40, 0.45); }
+
+/* Fluid island nav: detached floating glass pill, width fits content. */
+.ln-nav { position: fixed; top: 22px; left: 50%; transform: translateX(-50%); z-index: 40; width: max-content; max-width: calc(100% - 32px);
+  display: flex; align-items: center; gap: 36px; padding: 6px 6px 6px 22px; border-radius: 999px;
+  background: rgba(14, 7, 24, 0.55); box-shadow: inset 0 0 0 1px var(--ln-hair-strong), 0 20px 60px -30px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(24px) saturate(150%); -webkit-backdrop-filter: blur(24px) saturate(150%); }
+.ln-brand { display: flex; align-items: center; gap: 10px; font: 700 15px/1 var(--ln-display); letter-spacing: -0.01em; white-space: nowrap; }
+.ln-brand-dot { width: 10px; height: 14px; border-radius: 5px 5px 7px 7px; background: var(--ln-amber); box-shadow: 0 0 14px 3px rgba(255, 150, 50, 0.65); }
+.ln-links { display: flex; gap: 28px; font-size: 14px; color: var(--ln-muted); }
+.ln-links a { transition: color 0.5s var(--ln-ease); }
+.ln-links a:hover { color: var(--ln-cream); }
+.ln-burger { display: none; position: relative; width: 44px; height: 44px; border: 0; border-radius: 50%; cursor: pointer;
+  background: rgba(255, 255, 255, 0.06); }
+.ln-burger span { position: absolute; left: 14px; right: 14px; height: 1.5px; border-radius: 2px; background: var(--ln-cream);
+  transition: transform 0.6s var(--ln-ease); }
+.ln-burger span:first-child { transform: translateY(-4px); }
+.ln-burger span:last-child { transform: translateY(4px); }
+body.ln-menu-open .ln-burger span:first-child { transform: rotate(45deg); }
+body.ln-menu-open .ln-burger span:last-child { transform: rotate(-45deg); }
+
+/* Full-screen glass menu (mobile) with staggered mask reveal. Sibling of nav so fixed positioning is not trapped. */
+.ln-menu { position: fixed; inset: 0; z-index: 35; display: flex; flex-direction: column; justify-content: center; gap: 48px;
+  padding: 120px 28px 48px; background: rgba(6, 3, 12, 0.94); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
+  opacity: 0; visibility: hidden; transition: opacity 0.6s var(--ln-ease), visibility 0s linear 0.6s; }
+body.ln-menu-open .ln-menu { opacity: 1; visibility: visible; transition: opacity 0.6s var(--ln-ease); }
+.ln-menu-links { display: flex; flex-direction: column; gap: 10px; }
+.ln-menu-links a, .ln-menu-cta { transform: translateY(48px); opacity: 0;
+  transition: transform 0.8s var(--ln-ease), opacity 0.8s var(--ln-ease); transition-delay: calc(var(--i) * 60ms); }
+.ln-menu-links a { font: 700 clamp(2.4rem, 11vw, 3.4rem)/1.1 var(--ln-display); letter-spacing: -0.035em; }
+body.ln-menu-open .ln-menu-links a, body.ln-menu-open .ln-menu-cta { transform: none; opacity: 1; transition-delay: calc(100ms + var(--i) * 60ms); }
+
+@media (max-width: 767px) {
+  .ln-nav { width: calc(100% - 32px); justify-content: space-between; gap: 8px; padding-left: 18px; }
+  .ln-links { display: none; }
+  .ln-nav .ln-btn { margin-left: auto; }
+  .ln-burger { display: block; flex: none; }
+}
+@media (min-width: 768px) { .ln-menu { display: none; } }

@@ -1,0 +1,126 @@
+/* Landing guide sections: horizontal accordion, controls bento, pinned rules, final CTA, footer.
+   Cards are double-bezel shells (.ln-shell > .ln-core) defined in landing.css. */
+
+.ln-section { padding: clamp(8rem, 14vw, 12rem) 16px; max-width: 1240px; margin: 0 auto; }
+.ln-h2 { font-size: clamp(2.1rem, 4.2vw, 3.8rem); line-height: 1.08; font-weight: 800; letter-spacing: -0.03em; max-width: 52rem; margin-bottom: 64px; text-wrap: balance; }
+.ln-main h3 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; color: var(--ln-cream); }
+.ln-main p { line-height: 1.65; color: var(--ln-muted); }
+
+/* Horizontal accordion: collapsed vertical slices that expand on hover/focus/click. */
+.ln-accordion { display: flex; gap: 14px; height: 500px; }
+.ln-acc-panel { flex: 1 1 0; min-width: 0; cursor: pointer;
+  transition: flex-grow 0.9s var(--ln-ease), box-shadow 0.7s var(--ln-ease), background-color 0.7s var(--ln-ease); }
+.ln-acc-panel.is-open { flex-grow: 4; }
+.ln-acc-panel .ln-core { background: radial-gradient(120% 70% at 50% 0%, rgba(124, 58, 237, 0.16), transparent 60%), linear-gradient(165deg, var(--ln-ink-2), var(--ln-ink) 70%); }
+.ln-acc-panel.is-open .ln-core { background: radial-gradient(120% 70% at 50% 0%, rgba(255, 150, 50, 0.16), transparent 60%), linear-gradient(165deg, var(--ln-ink-2), var(--ln-ink) 70%); }
+.ln-acc-key { position: absolute; left: 22px; bottom: 22px; font: 600 13px/1 var(--ln-font); letter-spacing: 0.04em; color: var(--ln-amber-soft);
+  padding: 10px 13px; border-radius: 12px; background: rgba(255, 179, 92, 0.07); box-shadow: inset 0 0 0 1px rgba(255, 179, 92, 0.2); }
+.ln-acc-copy { position: absolute; left: 26px; right: 26px; bottom: 84px; max-width: 30rem; display: flex; flex-direction: column; gap: 12px;
+  opacity: 0; transform: translateY(20px); transition: opacity 0.5s var(--ln-ease), transform 0.9s var(--ln-ease); }
+.ln-acc-panel.is-open .ln-acc-copy { opacity: 1; transform: none; transition-delay: 0.25s; }
+.ln-acc-copy h3 { font-size: 1.75rem; letter-spacing: -0.03em; }
+.ln-acc-visual { position: absolute; inset: 0 0 46% 0; display: grid; place-items: center; transition: transform 0.9s var(--ln-ease); }
+.ln-acc-panel:hover .ln-acc-visual { transform: scale(1.06); }
+.ln-acc-visual span { position: absolute; display: block; }
+
+/* Visual: drifting motes. */
+.ln-vis-motes span { width: 11px; height: 11px; border-radius: 50%; background: #ffd27a; box-shadow: 0 0 18px 6px rgba(255, 190, 90, 0.65);
+  animation: ln-bob 3.2s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+.ln-vis-motes span:nth-child(1) { translate: -54px 12px; }
+.ln-vis-motes span:nth-child(2) { translate: 8px -30px; animation-delay: -1.1s; }
+.ln-vis-motes span:nth-child(3) { translate: 58px 26px; animation-delay: -2.2s; }
+@keyframes ln-bob { 50% { transform: translateY(-22px); opacity: 0.55; } }
+/* Visual: glowing lantern. */
+.ln-vis-lantern span:nth-child(1) { width: 68px; height: 90px; border-radius: 30px 30px 36px 36px;
+  background: radial-gradient(circle at 50% 55%, #fff1c9, #ffb35c 40%, #c2410c 88%); box-shadow: 0 0 80px 16px rgba(255, 150, 50, 0.5);
+  animation: ln-flicker 2.6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+.ln-vis-lantern span:nth-child(2) { width: 2px; height: 60px; background: rgba(255, 220, 170, 0.35); translate: 0 -74px; }
+.ln-vis-lantern span:nth-child(3) { width: 44px; height: 8px; border-radius: 4px; background: #3a1d52; translate: 0 -48px; }
+/* Visual: expanding pulse rings. */
+.ln-vis-pulse span { width: 60px; height: 60px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--ln-amber); animation: ln-ring 2.6s var(--ln-ease) infinite; }
+.ln-vis-pulse span:nth-child(2) { animation-delay: 0.85s; }
+.ln-vis-pulse span:nth-child(3) { animation-delay: 1.7s; }
+@keyframes ln-ring { from { transform: scale(0.4); opacity: 1; } to { transform: scale(3.4); opacity: 0; } }
+/* Visual: safe dome around a lit lantern, a shade kept outside. */
+.ln-vis-dome span:nth-child(1) { width: 220px; height: 110px; border-radius: 220px 220px 0 0; translate: 0 -20px;
+  background: radial-gradient(ellipse at 50% 100%, rgba(255, 179, 92, 0.3), transparent 70%); box-shadow: inset 0 1px 0 rgba(255, 179, 92, 0.45); }
+.ln-vis-dome span:nth-child(2) { width: 22px; height: 30px; border-radius: 10px; background: var(--ln-amber); box-shadow: 0 0 30px 8px rgba(255, 150, 50, 0.55); translate: 0 18px; }
+.ln-vis-dome span:nth-child(3) { width: 28px; height: 28px; border-radius: 50%; background: #4c1d95; box-shadow: 0 0 22px rgba(124, 58, 237, 0.8); translate: 150px 20px; }
+
+/* Controls bento: 4 cols x 2 rows. keys 2x2 (4) + score 2x1 (2) + camera 1 + pause 1 = 8 cells, dense, gapless. */
+.ln-bento { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: minmax(270px, auto); grid-auto-flow: dense; gap: 16px; }
+.ln-card .ln-core { display: flex; flex-direction: column; justify-content: flex-end; gap: 10px; padding: 30px; }
+.ln-card-keys { grid-column: span 2; grid-row: span 2; }
+.ln-card-keys .ln-core { background: radial-gradient(70% 55% at 50% 38%, rgba(255, 150, 50, 0.14), transparent 70%), linear-gradient(165deg, var(--ln-ink-2), var(--ln-ink) 70%); }
+.ln-card-score { grid-column: span 2; }
+.ln-card-score .ln-core { justify-content: space-between; }
+.ln-card-art { flex: 1; transition: transform 0.9s var(--ln-ease); }
+.ln-card:hover .ln-card-art { transform: scale(1.05); }
+.ln-keyboard { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
+.ln-key-row { display: flex; gap: 12px; }
+.ln-key { min-width: 64px; height: 64px; padding: 0 18px; display: inline-grid; place-items: center; border-radius: 18px;
+  font: 600 17px/1 var(--ln-font); color: var(--ln-cream); background: linear-gradient(180deg, #2a1646, #1a0d2d);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.06), 0 8px 0 -1px #0c0616, 0 16px 30px -12px rgba(0, 0, 0, 0.5); }
+.ln-key-wide { min-width: 228px; }
+.ln-keyboard .ln-key-row:first-child .ln-key:first-child,
+.ln-keyboard .ln-key-row:first-child .ln-key:last-child { color: var(--ln-amber); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 0 0 1px rgba(255, 179, 92, 0.3), 0 8px 0 -1px #0c0616, 0 0 30px -6px rgba(255, 150, 50, 0.35); }
+.ln-score-list { list-style: none; margin: 18px 0 0; padding: 0; display: flex; flex-direction: column; }
+.ln-score-list li { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--ln-hair); color: var(--ln-muted); font-size: 15px; }
+.ln-score-list li:last-child { border-bottom: 0; }
+.ln-score-list b { font: 700 1.05rem/1 var(--ln-display); color: var(--ln-amber); font-variant-numeric: tabular-nums; }
+.ln-orbit { position: relative; display: grid; place-items: center; }
+.ln-orbit::before { content: ''; width: 110px; height: 110px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(201, 167, 255, 0.3); }
+.ln-orbit i { position: absolute; width: 12px; height: 12px; border-radius: 50%; background: var(--ln-violet); box-shadow: 0 0 16px var(--ln-violet);
+  offset-path: circle(55px at 50% 50%); animation: ln-orbit 6s linear infinite; }
+@keyframes ln-orbit { to { offset-distance: 100%; } }
+.ln-pause-keys { display: flex; align-items: center; justify-content: center; gap: 10px; }
+.ln-pause-keys .ln-key { min-width: 54px; height: 54px; font-size: 14px; border-radius: 16px; }
+
+/* Pinned rules split: title column pinned left, rule cards scroll up on the right. */
+.ln-rules { display: grid; grid-template-columns: 5fr 7fr; gap: 72px; align-items: start; }
+.ln-rules-pin { display: flex; flex-direction: column; align-items: flex-start; }
+.ln-rules-pin .ln-h2 { margin-bottom: 24px; }
+.ln-rules-pin p { margin-bottom: 36px; max-width: 26rem; }
+.ln-rules-list { display: flex; flex-direction: column; gap: 18px; }
+.ln-rule .ln-core { display: flex; gap: 24px; align-items: flex-start; padding: 34px; }
+.ln-rule h3 { font-size: 1.45rem; margin-bottom: 8px; }
+.ln-rule p { font-size: 1.05rem; }
+.ln-rule-icon { flex: none; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; color: var(--ln-amber-soft);
+  background: rgba(255, 179, 92, 0.06); box-shadow: inset 0 0 0 1px rgba(255, 179, 92, 0.18); }
+.ln-icon { width: 24px; height: 24px; }
+
+/* Final CTA: one large double-bezel panel with a breathing glow. */
+.ln-final { padding: clamp(6rem, 12vw, 10rem) 16px clamp(8rem, 14vw, 12rem); max-width: 1240px; margin: 0 auto; }
+.ln-final-panel { --ln-radius: 2.75rem; --ln-bezel: 8px; }
+.ln-final-panel .ln-core { display: flex; flex-direction: column; align-items: center; text-align: center; padding: clamp(5rem, 10vw, 8rem) 24px;
+  background: radial-gradient(80% 60% at 50% 110%, rgba(255, 140, 40, 0.18), transparent 70%), linear-gradient(180deg, var(--ln-ink-2), var(--ln-night)); }
+.ln-final-glow { position: absolute; left: 50%; top: 100%; width: 900px; height: 900px; translate: -50% -50%;
+  border-radius: 50%; background: radial-gradient(circle, rgba(255, 140, 40, 0.3), transparent 62%); opacity: 0.6; pointer-events: none; }
+.ln-final-title { position: relative; max-width: 60rem; margin-bottom: 52px; font-size: clamp(2.5rem, 5.6vw, 5.2rem); line-height: 1.05; font-weight: 800; letter-spacing: -0.035em; text-wrap: balance; }
+.ln-final .ln-eyebrow, .ln-final [data-reveal] { position: relative; }
+.ln-footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; padding: 32px clamp(16px, 4vw, 48px) 40px; border-top: 1px solid var(--ln-hair); font-size: 13.5px; color: var(--ln-muted); }
+.ln-footer a { transition: color 0.5s var(--ln-ease); }
+.ln-footer a:hover { color: var(--ln-amber); }
+
+/* Tablet: bento 2 cols (keys 2x2 + score 2x1 + camera + pause = 8 cells), rules stack, no pin. */
+@media (max-width: 899px) {
+  .ln-bento { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ln-rules { grid-template-columns: 1fr; gap: 48px; }
+  .ln-accordion { flex-direction: column; height: auto; }
+  .ln-acc-panel, .ln-acc-panel.is-open { flex: none; height: 380px; }
+  .ln-acc-copy { opacity: 1; transform: none; }
+}
+/* Phone: single column, generous gaps, all spans reset. */
+@media (max-width: 767px) {
+  .ln-section { padding: 6.5rem 16px; }
+  .ln-h2 { margin-bottom: 44px; }
+  .ln-bento { grid-template-columns: 1fr; gap: 20px; }
+  .ln-card-keys, .ln-card-score { grid-column: span 1; grid-row: span 1; }
+  .ln-key { min-width: 52px; height: 52px; }
+  .ln-key-wide { min-width: 180px; }
+  .ln-rule .ln-core { padding: 26px; flex-direction: column; gap: 18px; }
+  .ln-final-panel { --ln-radius: 2rem; --ln-bezel: 6px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ln-main *, .ln-main *::before, .ln-main *::after { animation: none !important; transition: none !important; }
+}

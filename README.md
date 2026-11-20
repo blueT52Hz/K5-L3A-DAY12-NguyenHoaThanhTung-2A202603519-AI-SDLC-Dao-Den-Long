@@ -18,6 +18,8 @@ npm run preview
 
 Mở địa chỉ Vite in ra (mặc định http://localhost:4173). Chế độ dev: `npm run dev`. Test: `npm test`.
 
+Trang đầu là landing page có hướng dẫn chơi (cách chơi, điều khiển, cách tính điểm, luật). Game 3D chỉ được tải và chạy sau khi bấm **Bắt đầu chơi**. Thêm `?play=1` vào URL để bỏ qua landing và vào game ngay.
+
 ## Headless
 
 ```
