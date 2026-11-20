@@ -57,12 +57,20 @@ export function buildLanternGlowLayer(cfg: NightConfig, seed: number): LanternGl
   return {
     group,
     setLit(ids: string[]) {
-      for (const id of ids) {
-        const e = entries.get(id);
-        if (!e || e.lit) continue;
-        e.lit = true;
-        e.ring.visible = true;
-        e.mote.visible = true;
+      // ids is the full lit set: anything not listed is switched off and reset.
+      const on = new Set(ids);
+      for (const e of entries.values()) {
+        const want = on.has(e.id);
+        if (want === e.lit) continue;
+        e.lit = want;
+        e.ring.visible = want;
+        e.mote.visible = want;
+        if (!want) {
+          e.t = 0;
+          e.ring.scale.setScalar(0.001);
+          e.ringMat.uniforms.uAlpha.value = 0;
+          e.moteMat.opacity = 0;
+        }
       }
     },
     isLitNear(x: number, z: number) {

@@ -22,6 +22,18 @@ describe('decor atmosphere, glow, terrain', () => {
     expect(g.isLitNear(0, -20)).toBe(false);
     expect(() => g.update(0.5)).not.toThrow();
   });
+  it('glow layer: setLit la tap day du, den khong co trong tap bi tat', () => {
+    const g = buildLanternGlowLayer(getNight(1), 1);
+    g.setLit(['L1']);
+    g.update(0.5);
+    expect(g.isLitNear(0, 25)).toBe(true);
+    g.setLit([]);
+    expect(g.isLitNear(0, 25)).toBe(false);
+    expect(g.group.children.every((c) => !c.visible)).toBe(true);
+    g.setLit(['L2']);
+    expect(g.isLitNear(0, 25)).toBe(false);
+    expect(g.isLitNear(23.8, 7.7)).toBe(true);
+  });
   it('terrain Dem 1 co mesh, Dem 2/3 rong', () => {
     expect(buildTerrainLayer(getNight(1)).children.length).toBeGreaterThan(0);
     expect(buildTerrainLayer(getNight(3)).children.length).toBe(0);
