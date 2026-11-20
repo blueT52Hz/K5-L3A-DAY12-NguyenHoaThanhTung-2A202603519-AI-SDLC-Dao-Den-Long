@@ -1,59 +1,50 @@
 import * as THREE from 'three';
+import type { NightConfig } from '../../core/nights/night-config-types';
+import { getNight } from '../../core/nights';
+import { PALETTE } from './palette';
+import { buildNightTerrain } from './night-terrain-meshes';
 
-// Night 1 disc radius (src/core/nights/night-1-dao-ben.ts); per-night islands come in the web-shell task.
-const ISLAND_RADIUS = 40;
+/** Ambient scale for brightness: 0.15 + 0.55 * lit/total (0.15 dark ... 0.70 fully lit). */
+export function brightnessFor(lit: number, total: number): number {
+  const t = total > 0 ? Math.min(Math.max(lit / total, 0), 1) : 0;
+  return 0.15 + 0.55 * t;
+}
 
-/** Floating island (top at y=0), cloud sea below, night sky, fog, dim lights. */
-export function createEnvironment(scene: THREE.Scene, boost = false): { setBrightness(litCount: number): void } {
-  scene.background = new THREE.Color(0x1a1033);
-  scene.fog = new THREE.Fog(0x1a1033, 60, 190);
+/**
+ * Night terrain + sky + lights. Second arg may be a NightConfig (default night 1) or, for backward
+ * compatibility, a boolean `boost`; boost may also be passed as the third arg.
+ */
+export function createEnvironment(
+  scene: THREE.Scene, cfgOrBoost?: NightConfig | boolean, boostArg = false,
+): { setBrightness(lit: number, total?: number): void; brightness: number } {
+  const cfg = typeof cfgOrBoost === 'object' ? cfgOrBoost : getNight(1);
+  const boost = typeof cfgOrBoost === 'boolean' ? cfgOrBoost : boostArg;
+  scene.background = new THREE.Color(PALETTE.skyNight);
+  scene.fog = new THREE.Fog(PALETTE.skyNight, 60, 190);
+  scene.add(buildNightTerrain(cfg));
 
-  const top = new THREE.Mesh(
-    new THREE.CylinderGeometry(ISLAND_RADIUS, ISLAND_RADIUS - 4, 2, 32),
-    new THREE.MeshStandardMaterial({ color: 0x6f9a52, roughness: 1 }),
-  );
-  top.position.y = -1;
-  const rock = new THREE.Mesh(
-    new THREE.ConeGeometry(ISLAND_RADIUS - 4, 22, 24),
-    new THREE.MeshStandardMaterial({ color: 0x7a6488, roughness: 1 }),
-  );
-  rock.rotation.x = Math.PI;
-  rock.position.y = -13;
-
-  // cloud sea: a few flattened spheres around and below
-  const cloudMat = new THREE.MeshStandardMaterial({ color: 0x9a86d0, roughness: 1 });
-  const clouds = new THREE.Group();
-  for (let i = 0; i < 14; i++) {
-    const a = (i / 14) * Math.PI * 2;
-    const r = 55 + (i % 3) * 18;
-    const c = new THREE.Mesh(new THREE.SphereGeometry(10 + (i % 4) * 3, 10, 8), cloudMat);
-    c.scale.y = 0.35;
-    c.position.set(Math.cos(a) * r, -22 - (i % 3) * 3, Math.sin(a) * r);
-    clouds.add(c);
-  }
-
-  // no shadows anywhere: ambient + hemisphere + one soft moon directional (all brightened by lit lanterns)
-  const ambient = new THREE.AmbientLight(0x8d7fc4, 0.9);
-  const hemi = new THREE.HemisphereLight(0xb4a8f0, 0x3a2a55, 0.7);
-  const moon = new THREE.DirectionalLight(0xc9c2ff, 0.9);
+  const ambient = new THREE.AmbientLight(0x8d7fc4, 1);
+  const hemi = new THREE.HemisphereLight(0xb4a8f0, 0x3a2a55, 1);
+  const moon = new THREE.DirectionalLight(0xc9c2ff, 1);
   moon.position.set(-30, 50, 20);
-  scene.add(top, rock, clouds, ambient, hemi, moon);
+  scene.add(ambient, hemi, moon);
 
-  const sky = new THREE.Color();
-  const skyDark = new THREE.Color(0x1a1033);
-  const skyLit = new THREE.Color(0x3a2458);
-
-  return {
-    setBrightness(litCount: number) {
-      const t = Math.min(Math.max(litCount, 0), 5) / 5;
-      const b = boost ? 1.35 : 1; // CPU mode: no point lights, so lift ambient/hemi
-      ambient.intensity = (0.9 + 0.9 * t) * b;
-      hemi.intensity = (0.7 + 0.8 * t) * b;
-      moon.intensity = 0.9 + 0.7 * t;
-      moon.color.setHex(t > 0.5 ? 0xffe2b8 : 0xc9c2ff); // warmer as the island wakes
-      sky.copy(skyDark).lerp(skyLit, t);
+  const skyDark = new THREE.Color(PALETTE.skyNight), skyLit = new THREE.Color(PALETTE.mist), sky = new THREE.Color();
+  const env = {
+    brightness: 0.15,
+    setBrightness(lit: number, total = 5) {
+      const b = brightnessFor(lit, total);
+      env.brightness = b;
+      const k = boost ? 1.35 : 1; // CPU mode: no point lights, lift ambient/hemi
+      ambient.intensity = b * 2.2 * k;
+      hemi.intensity = b * 1.8 * k;
+      moon.intensity = b * 1.8;
+      moon.color.setHex(b > 0.45 ? 0xffe2b8 : 0xc9c2ff);
+      sky.copy(skyDark).lerp(skyLit, (b - 0.15) / 0.55);
       (scene.background as THREE.Color).copy(sky);
       scene.fog!.color.copy(sky);
     },
   };
+  env.setBrightness(0);
+  return env;
 }

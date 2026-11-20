@@ -3,8 +3,8 @@ import * as THREE from 'three';
 /** Mây, child lantern keeper: small body with arms, skin-tone head with face, pointed straw non la, glowing lantern hanging from the brim. Feet y=0, faces +Z. */
 export function createPlayerModel(withLight = true): THREE.Group {
   const g = new THREE.Group();
-  const cloth = new THREE.MeshStandardMaterial({ color: 0x3f8fb0, roughness: 0.8 });
-  const sash = new THREE.MeshStandardMaterial({ color: 0xd9533b, roughness: 0.8 });
+  const cloth = new THREE.MeshStandardMaterial({ color: 0xe8e2d0, roughness: 0.8 });
+  const sash = new THREE.MeshStandardMaterial({ color: 0xc8102e, roughness: 0.8 });
   const skin = new THREE.MeshStandardMaterial({ color: 0xf2c397, roughness: 0.7 });
   const straw = new THREE.MeshStandardMaterial({ color: 0xf0cf6e, roughness: 0.9, emissive: 0xb08a20, emissiveIntensity: 0.7 });
   const dark = new THREE.MeshStandardMaterial({ color: 0x2b1b12 });
