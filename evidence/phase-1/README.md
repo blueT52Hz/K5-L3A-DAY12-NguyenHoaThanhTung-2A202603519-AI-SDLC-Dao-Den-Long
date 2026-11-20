@@ -23,3 +23,7 @@ node scripts/generate-evidence.mjs
 | `screenshots/` | Ảnh chụp bản web (Chrome, qua `npm run preview`): màn bắt đầu và HUD khi di chuyển/nhặt đom đóm |
 
 Mỗi tình huống chạy qua `node dist-headless/headless.mjs --seed 1 --night 1 --scenario ... --inputs ... --ticks N --out ...`. Script thoát mã khác 0 nếu hai lần chạy khác nhau hoặc test fail.
+
+## Ghi chú về phiên bản contract
+
+Các file JSONL ở đây do contract v1.0 sinh (tag `phase-1`). Dưới luật v1.2 trở lên (Phase 3 và 4: dầu đèn, thắng ở bình minh, điểm mới, sửa recoil và hết choáng) chạy lại cùng lệnh cho output khác, và một số kỳ vọng trong các file này (vd `all_lit`, điểm theo đom đóm) không còn đúng. Không sinh lại để giữ nguyên bằng chứng của đúng phase đó; muốn xem bản cũ: `git checkout phase-1`.

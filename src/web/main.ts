@@ -10,10 +10,23 @@ async function startGame(startNight?: NightId): Promise<void> {
   bootGame(startNight);
 }
 
-const skipLanding = new URLSearchParams(window.location.search).get('play') === '1';
+const params = new URLSearchParams(window.location.search);
+const skipLanding = params.get('play') === '1';
 const landingRoot = document.getElementById('landing')!;
 
-if (skipLanding) {
+// `?bench=<seed>&duration=<s>`: benchmark scene only (scripts/bench.mjs), no landing, menus or HUD.
+async function startBench(): Promise<void> {
+  const seed = Number.parseInt(params.get('bench') ?? '', 10);
+  const duration = Number(params.get('duration'));
+  const { runBench } = await import('./bench/bench-mode');
+  runBench(Number.isFinite(seed) ? seed : 42, Number.isFinite(duration) && duration > 0 ? duration : 30);
+}
+
+if (params.has('bench')) {
+  landingRoot.remove();
+  document.getElementById('hud')?.remove();
+  void startBench();
+} else if (skipLanding) {
   landingRoot.remove();
   void startGame();
 } else {

@@ -23,7 +23,7 @@ Your role is to analyze user requirements, delegate tasks to appropriate sub-age
 ## Harness hooks
 
 - Stop hook (`.claude/settings.json` -> `.claude/hooks/run-tests-before-stop.sh`): chạy `npm test`, chặn kết thúc phiên (exit 2) khi test đỏ.
-- Skill dự án: `.claude/skills/dao-den-long-contract/SKILL.md` (contract v1.1, thứ tự tick, cách thêm scenario/evidence); dùng khi sửa `src/core`, headless hay evidence. Còn lại dùng skill superpowers toàn cục.
+- Skill dự án: `.claude/skills/dao-den-long-contract/SKILL.md` (contract v1.3, thứ tự tick, cách thêm scenario/evidence); dùng khi sửa `src/core`, headless hay evidence. Còn lại dùng skill superpowers toàn cục.
 
 ## [IMPORTANT] Consider Modularization
 - If a code file exceeds 200 lines of code, consider modularizing it

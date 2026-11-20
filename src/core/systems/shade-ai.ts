@@ -38,7 +38,8 @@ function pushStep(cfg: NightConfig, sh: Shade): void {
 function wanderOrChase(s: GameState, cfg: NightConfig, sh: Shade): void {
   const p = s.player.pos;
   const d = distXZ(sh.pos, p);
-  if (sh.state === 'wander' && d <= SHADE_DETECT && sh.noDetectTick !== s.tick) sh.state = 'chase';
+  // Bench scene: shades keep the wander rule (no detection of May) so every run measures the same crowd.
+  if (sh.state === 'wander' && !s.bench && d <= SHADE_DETECT && sh.noDetectTick !== s.tick) sh.state = 'chase';
   else if (sh.state === 'chase' && d > SHADE_GIVE_UP) sh.state = 'wander';
   const speed = cfg.shadeSpeed / TICK_RATE;
   if (sh.state === 'chase') {

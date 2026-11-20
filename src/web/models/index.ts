@@ -1,7 +1,9 @@
 export { createPlayerModel } from './player-may-model';
-export { createShadeModel, setShadeColorblind, setShadeStunned } from './shade-model';
+export { createShadeModel } from './shade-model';
+export { ShadeInstancedCrowd, type ShadePose } from './shade-instanced-crowd';
+export { GrowableInstancedMesh } from './growable-instanced-mesh';
 export { createLanternModel } from './lantern-model';
-export { createMoteModel } from './mote-model';
+export { createMoteModel, moteGeometry, moteMaterial } from './mote-model';
 export { createEnvironment } from './island-environment';
 export { PALETTE } from './palette';
 export { buildNightTerrain } from './night-terrain-meshes';

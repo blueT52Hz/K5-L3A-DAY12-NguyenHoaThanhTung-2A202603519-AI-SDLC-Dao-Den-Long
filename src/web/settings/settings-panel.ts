@@ -1,5 +1,8 @@
 import type { NightId } from '../../core/types';
 import { getNight } from '../../core/nights';
+import { createKeyBindingsEditor } from './key-bindings-editor';
+import { findConflicts, setBindings } from './key-bindings';
+import { applyAccessibility } from './accessibility-flags';
 import { clampSettings, loadSettings, saveSettings, type Settings } from './settings-store';
 
 export interface SettingsPanel { open(): void; close(): void; get(): Settings }
@@ -24,6 +27,9 @@ export function createSettingsPanel(
     <label class="set-row">Độ nhạy chuột <output data-k="so"></output>
       <input type="range" min="0.2" max="3" step="0.1" data-k="sens"></label>
     <label class="set-row"><span><input type="checkbox" data-k="cb"> Bảng màu dễ phân biệt</span></label>
+    <label class="set-row"><span><input type="checkbox" data-k="rm"> Giảm chuyển động (tắt rung, chớp)</span></label>
+    <label class="set-row"><span><input type="checkbox" data-k="lt"> Chữ lớn (x1.25)</span></label>
+    <div data-k="binds"></div>
     <label class="set-row">Chọn màn <select data-k="lvl">${NIGHT_OPTIONS}</select></label>
     <button data-k="switch">Chuyển màn</button>
     <button data-k="close">Đóng</button></div>`;
@@ -31,6 +37,8 @@ export function createSettingsPanel(
   const vol = el.querySelector<HTMLInputElement>('[data-k="vol"]')!;
   const sens = el.querySelector<HTMLInputElement>('[data-k="sens"]')!;
   const cb = el.querySelector<HTMLInputElement>('[data-k="cb"]')!;
+  const rm = el.querySelector<HTMLInputElement>('[data-k="rm"]')!;
+  const lt = el.querySelector<HTMLInputElement>('[data-k="lt"]')!;
   const vo = el.querySelector<HTMLElement>('[data-k="vo"]')!;
   const so = el.querySelector<HTMLElement>('[data-k="so"]')!;
 
@@ -38,18 +46,31 @@ export function createSettingsPanel(
     vol.value = String(current.volume);
     sens.value = String(current.mouseSensitivity);
     cb.checked = current.colorblind;
+    rm.checked = current.reducedMotion;
+    lt.checked = current.largeText;
+    editor.paint(current.bindings);
     vo.textContent = `${Math.round(current.volume)}`;
     so.textContent = current.mouseSensitivity.toFixed(1);
   };
-  const commit = (): void => {
-    current = clampSettings({ volume: Number(vol.value), mouseSensitivity: Number(sens.value), colorblind: cb.checked });
+  const commit = (bindings = current.bindings): void => {
+    current = clampSettings({
+      volume: Number(vol.value), mouseSensitivity: Number(sens.value), colorblind: cb.checked,
+      bindings, reducedMotion: rm.checked, largeText: lt.checked,
+    });
     paint();
+    applyAccessibility(current);
+    setBindings(current.bindings);
     saveSettings(current);
     onChange(current);
   };
-  vol.addEventListener('input', commit);
-  sens.addEventListener('input', commit);
-  cb.addEventListener('change', commit);
+  // Conflicting drafts are shown (red) but never applied or saved.
+  const editor = createKeyBindingsEditor(current.bindings, (b) => { if (findConflicts(b).length === 0) commit(b); });
+  el.querySelector('[data-k="binds"]')!.appendChild(editor.el);
+  vol.addEventListener('input', () => commit());
+  sens.addEventListener('input', () => commit());
+  cb.addEventListener('change', () => commit());
+  rm.addEventListener('change', () => commit());
+  lt.addEventListener('change', () => commit());
   el.querySelector('[data-k="close"]')!.addEventListener('click', () => el.classList.remove('show'));
   const lvl = el.querySelector<HTMLSelectElement>('[data-k="lvl"]')!;
   el.querySelector('[data-k="switch"]')!.addEventListener('click', () => {
@@ -57,6 +78,8 @@ export function createSettingsPanel(
     if (n === 1 || n === 2 || n === 3) onSwitchNight(n);
   });
   paint();
+  applyAccessibility(current);
+  setBindings(current.bindings);
   onChange(current);
   return {
     open: () => { paint(); el.classList.add('show'); },

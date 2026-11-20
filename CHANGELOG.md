@@ -1,5 +1,28 @@
 # Changelog
 
+## Phase 4 - "Bình minh" v1.0.0 (contract v1.3)
+
+### Breaking changes
+- `game.contract.json`: `contract_version` 1.3; `run_cmd` đổi thành `npm start` (`node server.mjs`, cổng `PORT` mặc định 4173, phục vụ `dist/` và `/api/leaderboard`); thêm `bench_cmd` (`node scripts/bench.mjs`) và `soak_cmd` (`node dist-headless/soak.mjs`). Tuning giữ nguyên v1.2.
+- `tests/smoke.test.ts`: kỳ vọng contract đổi từ 1.2 sang 1.3 (không test nào bị skip hay xóa).
+- `npm run build` bundle thêm `dist-headless/soak.mjs` và `server.mjs`; `server.mjs` bị gitignore (sinh ra khi build).
+- Lõi: thêm cờ `GameState.bench` (mặc định false, không có trong snapshot, không rút RNG) nên output headless của v1.0-v1.2 không đổi.
+
+### Added
+- Bench: `node scripts/bench.mjs --seed 42 --duration 30 --out bench.json` (Playwright, Chrome có giao diện 1280x720, tắt vsync); trang `/?bench=<seed>&duration=<s>` tự đo FPS, p1 low, p95, load, bộ nhớ (RSS cả cây tiến trình lấy mẫu mỗi 3 s).
+- Soak: `node dist-headless/soak.mjs --seed 7 --nights 10 --out soak.json` (input ngẫu nhiên tất định).
+- Server Node thuần và bảng xếp hạng top 10 (nhập tên sau bình minh hoặc khi thua; xem từ landing, chọn Đêm, menu trong game); `node server.mjs --export-leaderboard out.json`.
+- Trợ năng: đổi phím cho 9 hành động (cảnh báo trùng phím, khôi phục mặc định, Esc luôn tạm dừng), phụ đề và mũi tên mép màn hình chỉ Bóng Mực mới, cảnh báo gió, 10 giây cuối, đèn dầu thấp; giảm chuyển động; chữ UI >= 18 px, chữ lớn x1.25.
+- Chọn Đêm ở landing và trong Cài đặt.
+- Đóng gói: `scripts/package-release.mjs` (`npm run release`) tạo `release/dao-den-long-v1.0.0.zip`; `CREDITS.md`, `LICENSE` (MIT), `docs/retro.md`, ảnh chụp ở `docs/screenshots/`.
+
+### Performance
+- Bóng Mực và đom đóm vẽ bằng `InstancedMesh` (khoảng 800 xuống khoảng 100 draw call); vật liệu Lambert cho phần mờ đục; rào nhịp khung hình theo GPU.
+- `bench.json` (GT 730): avg_fps 100.7, p1_low_fps 33.1, frame_ms_p95 18, load_ms 3736, peak_mem_mb 515. `soak.json`: 10 Đêm, 0 crash, bộ nhớ 51 đến 57 MB.
+
+### Evidence
+- `evidence/phase-4/` (ảnh chụp trợ năng, bảng xếp hạng; README liệt kê lệnh sinh lại). JSONL của Phase 1 và 2 giữ nguyên bản sinh bởi contract cũ (xem ghi chú trong từng thư mục).
+
 ## Phase 3 - "Đèn cạn dầu" (contract v1.2)
 
 ### Breaking changes
@@ -44,3 +67,26 @@
 
 ### Evidence
 - `evidence/phase-3/` sinh bằng `scripts/generate-evidence-phase-3.mjs`: `fuel-out`, `refuel`, `relight`, `drain`, `win-dawn`, `lose-dawn`, determinism 3 Đêm, `headless-timing.txt`, `vitest.txt`.
+
+## Phase 2 - "Ba Đêm" (contract v1.1)
+
+### Breaking changes
+- `game.contract.json` 1.1: tuning theo đề mới (`lantern_cost` 5 -> 10, `pickup_radius` 1.5 -> 1, `interact_radius` 3 -> 2, `pulse_cost` 1 -> 3, `pulse_radius` 6 -> 5, `invuln_s` 2 -> 1.5, `pulse_stun_s` 3 -> 2...); thêm lướt (`dash_speed` 14, `dash_duration_s` 0.2, `dash_cooldown_s` 1.5), `night2_duration_s`, `night3_duration_s`, `fall_enabled` true.
+- Headless nhận `--night 1|2|3` (giá trị khác: mã thoát 1); snapshot có `invuln` (boolean), event `night_start`, trạng thái tạm dừng `paused`.
+- Bóng Mực có 5 trạng thái (`spawning`, `wander`, `chase`, `recoil`, `stunned`); không còn tường ở mép đảo (rơi xuống y < -10 mất 1 Ngọn Lửa).
+
+### Added
+- Đêm 2 (Đảo Cầu, hai đĩa nối cầu tre) và Đêm 3 (Đảo Chuông, 3 tầng); lướt, bục nhảy, gió mạnh, Bùa Gió, Gió Lạc cướp đom đóm, tạm dừng ở lõi.
+- Web: luồng 3 Đêm, menu tạm dừng, cài đặt lưu `localStorage`, âm thanh WebAudio tổng hợp, HUD đầy đủ, bảng màu chuẩn; đồ họa đảo stylized và nhân vật Mây có khớp.
+- Evidence `evidence/phase-2/` sinh bằng `scripts/generate-evidence-phase-2.mjs`; skill dự án `dao-den-long-contract`.
+
+### Ghi chú
+- Hết thời gian nên bỏ chạy `npm test` và review từng task từ Task 6 (ghi ở `docs/ai-log.md`).
+
+## Phase 1 - "Đêm đầu tiên" (contract v1.0)
+
+### Added
+- Lõi mô phỏng thuần TypeScript 60 tick/giây, tất định theo seed: di chuyển, nhặt đom đóm, thắp 5 đèn, tỏa sáng, Bóng Mực, Ngọn Lửa, hết giờ.
+- Headless CLI `dist-headless/headless.mjs` xuất JSONL (snapshot, event, end), nhận `--scenario` và `--inputs`.
+- Web: game 3D Three.js (model dựng từ khối cơ bản), vòng lặp 60 Hz, camera, HUD, restart, landing page có hướng dẫn, chế độ CPU `?cpu=1`.
+- Evidence `evidence/phase-1/` sinh bằng `scripts/generate-evidence.mjs`; AGENTS.md, hook chặn kết thúc khi test đỏ, nhật ký AI.

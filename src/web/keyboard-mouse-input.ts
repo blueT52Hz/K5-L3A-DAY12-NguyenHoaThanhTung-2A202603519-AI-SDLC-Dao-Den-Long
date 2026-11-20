@@ -1,4 +1,5 @@
 import type { InputFrame } from '../core/types';
+import { getBindings, isCapturingKey } from './settings/key-bindings';
 
 const held = new Set<string>();
 let yawDeg = 0;
@@ -27,14 +28,17 @@ export function clearInput(): void {
   pauseQueued = false;
 }
 
+/** Capture-phase keydown: gameplay keys are tracked by code (the pause shortcut itself lives in game-boot). */
 export function initInput(target: HTMLElement): void {
   window.addEventListener('keydown', (e) => {
-    if (locked) return;
+    if (isCapturingKey()) return;
     const k = e.code;
-    if (k === 'KeyR' && !e.repeat) restartRequested = true;
-    if (['Space', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(k)) e.preventDefault();
-    held.add(k);
-  });
+    if (!locked) {
+      if (k === 'KeyR' && !e.repeat) restartRequested = true;
+      if (['Space', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(k)) e.preventDefault();
+      held.add(k);
+    }
+  }, true);
   window.addEventListener('keyup', (e) => held.delete(e.code));
   window.addEventListener('blur', () => held.clear());
   target.addEventListener('mousedown', () => { if (!locked) dragging = true; });
@@ -61,14 +65,15 @@ export function consumeRestart(): boolean {
   return r;
 }
 
-/** Move is in camera space; core rotates by cam_yaw_deg. W=+z, A=+x, D=-x. */
+/** Move is in camera space; core rotates by cam_yaw_deg. up=+z, left=+x, right=-x (keys from bindings). */
 export function readInput(camYawDeg: number): InputFrame {
+  const b = getBindings();
   let x = 0;
   let z = 0;
-  if (held.has('KeyW')) z += 1;
-  if (held.has('KeyS')) z -= 1;
-  if (held.has('KeyA')) x += 1;
-  if (held.has('KeyD')) x -= 1;
+  if (held.has(b.up)) z += 1;
+  if (held.has(b.down)) z -= 1;
+  if (held.has(b.left)) x += 1;
+  if (held.has(b.right)) x -= 1;
   const pause = pauseQueued;
   pauseQueued = false;
   const len = Math.hypot(x, z);
@@ -76,10 +81,10 @@ export function readInput(camYawDeg: number): InputFrame {
   return {
     move: [x, z],
     cam_yaw_deg: camYawDeg,
-    jump: held.has('Space'),
-    interact: held.has('KeyE'),
-    pulse: held.has('KeyF'),
-    dash: held.has('ShiftLeft') || held.has('ShiftRight'),
+    jump: held.has(b.jump),
+    interact: held.has(b.interact),
+    pulse: held.has(b.pulse),
+    dash: held.has(b.dash) || (b.dash === 'ShiftLeft' && held.has('ShiftRight')),
     pause,
   };
 }

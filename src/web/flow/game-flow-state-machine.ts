@@ -19,6 +19,11 @@ export class GameFlow {
     return Object.values(this.wonScores).reduce((a, b) => a + (b ?? 0), 0);
   }
 
+  /** Number of distinct nights won in this run (for the leaderboard). */
+  get nightsWon(): number {
+    return Object.keys(this.wonScores).length;
+  }
+
   /** Fresh run starting at `startNight` (default 1): score reset, then that night's intro. */
   startRun(startNight: NightId = 1): void {
     this.wonScores = {};

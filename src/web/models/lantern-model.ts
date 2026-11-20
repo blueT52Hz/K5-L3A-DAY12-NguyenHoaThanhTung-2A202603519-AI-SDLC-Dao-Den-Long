@@ -11,15 +11,14 @@ export interface LanternModel {
 /** Đèn Lồng Lớn: wooden post + lantern cage + fuel bar. Unlit cages are squashed to 80% height with torn paper. */
 export function createLanternModel(withLight = true): LanternModel {
   const group = new THREE.Group();
-  const wood = new THREE.MeshStandardMaterial({ color: 0x6b4a32, roughness: 0.9, emissive: 0x2a1608, emissiveIntensity: 0.6 });
+  // Matte Lambert (cheaper than standard with 7 point lights); the lit glow comes from the emissive term.
+  const wood = new THREE.MeshLambertMaterial({ color: 0x6b4a32, emissive: 0x2a1608, emissiveIntensity: 0.6 });
   const post = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.16, 2.2, 8), wood);
   post.position.y = 1.1;
   const arm = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.08, 0.08), wood);
   arm.position.set(0.3, 2.2, 0);
 
-  const cageMat = new THREE.MeshStandardMaterial({
-    color: 0xc9a77a, emissive: 0xffb347, emissiveIntensity: 0.12, roughness: 0.6,
-  });
+  const cageMat = new THREE.MeshLambertMaterial({ color: 0xc9a77a, emissive: 0xffb347, emissiveIntensity: 0.12 });
   const cage = new THREE.Mesh(new THREE.SphereGeometry(0.45, 12, 10), cageMat);
   cage.position.set(0.6, 1.8, 0);
   const cap = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.25, 8), wood);

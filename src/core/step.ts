@@ -36,12 +36,12 @@ export function step(s: GameState, input: InputFrame): GameEvent[] {
   s.simTick += 1;
   s.timeLeftS = Math.max(0, s.t0 - s.simTick / TICK_RATE);
   tickTimers(s); // 2
-  burnAndDrainFuel(s, events); // 2b: fuel burn, drain, lantern_out
+  if (!s.bench) burnAndDrainFuel(s, events); // 2b: fuel burn, drain, lantern_out (off in the bench scene)
   updateWind(s); // 3
   startDashIfRequested(s, input, edges, events);
   movePlayer(s, input, edges);
   checkFall(s, events);
-  pickupMotes(s, events); // 4
+  if (!s.bench) pickupMotes(s, events); // 4
   pickupCharms(s, events);
   if (edges.interact) depositToLantern(s, events); // 5
   updateSafeZones(s); // 6
@@ -49,6 +49,7 @@ export function step(s: GameState, input: InputFrame): GameEvent[] {
   moveShades(s); // 8
   moveDrifters(s);
   drifterSteal(s, events); // 9
+  if (s.bench) return events; // bench scene: no hits, spawns or end of night (steps 9b-11)
   checkHit(s, events);
   spawnScheduledMote(s); // 10
   spawnShades(s, events);

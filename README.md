@@ -1,24 +1,67 @@
-# Đảo Đèn Lồng - Phase 3 (3 Đêm, đèn cạn dầu)
+# Đảo Đèn Lồng - v1.0.0 (Bình minh)
 
-Game 3D (Three.js + TypeScript): nhặt đom đóm, nạp vào Đèn Lồng Lớn, tránh Bóng Mực và Gió Lạc, giữ đủ đèn sáng (tiếp dầu khi cạn) cho tới bình minh, qua 3 Đêm.
-Lõi mô phỏng (`src/core`) là TypeScript thuần, chạy 60 tick/giây, dùng chung cho bản web và chế độ headless (Test Contract v1.2, tất định theo seed).
+Game 3D (Three.js + TypeScript): nhặt đom đóm, nạp vào Đèn Lồng Lớn, tránh Bóng Mực và Gió Lạc, giữ đủ đèn sáng (tiếp dầu khi cạn) cho tới bình minh, qua 3 Đêm. Có bảng xếp hạng top 10, đổi phím, chế độ trợ năng, bench và soak test.
+Lõi mô phỏng (`src/core`) là TypeScript thuần, chạy 60 tick/giây, dùng chung cho bản web và chế độ headless (Test Contract v1.3, tất định theo seed).
 
-Sinh viên: Nguyễn Hoà Thanh Tùng - 2A202603519. Tag nộp bài: `phase-1` (Phase 1), `phase-2` (Phase 2, gắn sau khi đo FPS và chụp ảnh web), `phase-3` (Phase 3, gắn khi nộp).
-Các tài liệu đề lab nằm trong [`lab/`](lab/).
+Sinh viên: Nguyễn Hoà Thanh Tùng - 2A202603519. Tag nộp bài: `phase-1`, `phase-2`, `phase-3`, `phase-4` (kèm GitHub Release `v1.0.0`). Các tài liệu đề lab nằm trong [`lab/`](lab/).
+
+| | |
+|---|---|
+| ![Landing](docs/screenshots/landing-desktop.png) | ![Đêm 1](docs/screenshots/night1-hud.png) |
+| ![Đêm 3](docs/screenshots/night3-hud.png) | ![Phụ đề và mũi tên Bóng Mực](docs/screenshots/a11y-hud-caption-shade.png) |
+| ![Bảng xếp hạng](docs/screenshots/leaderboard-top10.png) | ![Đổi phím](docs/screenshots/a11y-bindings-conflict.png) |
+
+## Video demo
+
+[Xem video demo trên Google Drive](https://drive.google.com/file/d/1cA99tHRh9Qp-5KtF33mhPsXi9QYC-QbG/view?usp=sharing) (3 phút 08 giây, 1280x720, có tiếng). File gốc 144 MB vượt giới hạn 100 MB/file của GitHub nên không commit vào repo.
+
+## Yêu cầu hệ thống
+
+- Node >= 20 (đã chạy với Node 24), npm. Không cần biên dịch native; binary prebuilt cho linux/darwin/win32 đã có trong `package-lock.json`.
+- Trình duyệt hiện đại có WebGL2 (Chrome/Edge/Firefox mới), màn hình tối thiểu 1280x720, bàn phím và chuột. Bản đo FPS dùng Chrome trên Windows 10.
+- Chạy bench cần Playwright (đã có trong devDependencies) và Chrome cài sẵn (có thể dùng Chromium của Playwright: `npx playwright install chromium`).
+- GPU rời không bắt buộc: có chế độ CPU (xem cuối README). Máy đo của repo là GPU rất yếu (GT 730).
 
 ## Cài đặt và chạy (3 lệnh)
-
-Yêu cầu Node >= 20 (không cần biên dịch native; binary prebuilt cho linux/darwin/win32 đã có trong `package-lock.json`).
 
 ```
 npm ci
 npm run build
-npm run preview
+npm start
 ```
 
-Mở địa chỉ Vite in ra (mặc định http://localhost:4173). Chế độ dev: `npm run dev`. Test: `npm test`.
+Mở http://localhost:4173 (đổi cổng bằng biến môi trường `PORT`). `npm start` chạy `node server.mjs`: phục vụ `dist/` và API bảng xếp hạng (`/api/leaderboard`), dữ liệu lưu ở `data/leaderboard.json` (tự tạo, không commit). Chế độ dev: `npm run dev`.
 
-Trang đầu là landing page có hướng dẫn chơi. Game 3D chỉ được tải sau khi bấm **Bắt đầu chơi**, rồi vào menu chọn Đêm. Thêm `?play=1` vào URL để bỏ qua landing.
+Trang đầu là landing page có hướng dẫn chơi và chọn Đêm. Game 3D chỉ được tải sau khi bấm **Bắt đầu chơi**. Thêm `?play=1` vào URL để bỏ qua landing.
+
+## Điều khiển
+
+| Phím (mặc định) | Tác dụng |
+|---|---|
+| W A S D | Di chuyển (theo hướng camera) |
+| Space | Nhảy |
+| Shift trái | Lướt (dash): 12 tick ở 14 m/s, hồi chiêu 1.5 s |
+| E | Nạp đom đóm vào đèn gần nhất trong 2m: đèn tắt thì thắp (hoặc thắp lại), đèn sáng thì châm dầu |
+| F | Tỏa sáng (pulse): choáng và đẩy Bóng Mực trong 5m, tốn 3 đom đóm |
+| Kéo chuột / phím mũi tên trái-phải | Xoay camera (yaw đưa vào `cam_yaw_deg`) |
+| P | Tạm dừng / tiếp tục (lõi dừng hoàn toàn); menu có Tiếp tục, Chơi lại Đêm, Cài đặt, Về menu |
+| Esc | Luôn tạm dừng / tiếp tục (không đổi được) |
+| R | Chơi lại (ở màn kết thúc) |
+
+**Đổi phím:** Cài đặt > Phím điều khiển cho 9 hành động (đi 4 hướng, nhảy, lướt, nạp/thắp đèn, tỏa sáng, tạm dừng). Trùng phím thì hiện cảnh báo và không áp dụng; nút "Khôi phục mặc định" đặt lại. Esc, mũi tên trái/phải và R là phím cố định. Lưu ở `localStorage` (`dao-den-long.settings.v1`).
+
+**Trợ năng:** phụ đề (chữ) và mũi tên ở mép màn hình chỉ hướng Bóng Mực mới xuất hiện; cảnh báo gió sắp thổi, 10 giây cuối, đèn dầu thấp; giảm chuyển động (tắt rung camera và chớp màn hình); chữ UI tối thiểu 18 px ở 1280x720, tùy chọn chữ lớn x1.25; chế độ dễ phân biệt màu (từ Phase 3). Cài đặt khác: âm lượng tổng 0-100, độ nhạy chuột 0.2-3.0.
+
+**Bảng xếp hạng:** sau khi thắng bình minh hoặc thua, nhập tên (có kiểm tra hợp lệ) để vào top 10. Xem top 10 từ landing, màn chọn Đêm và menu trong game. Chọn Đêm có ở landing và trong Cài đặt.
+
+## Kiểm thử
+
+```
+npm test            # vitest, 178 test
+npx tsc --noEmit    # kiểm kiểu
+```
+
+`npm run build` đã gồm `tsc --noEmit`, `vite build` và bundle headless, soak, server bằng esbuild.
 
 ## Headless
 
@@ -30,23 +73,54 @@ node dist-headless/headless.mjs --seed 42 --night 1 --ticks 1200 --out out/run.j
 - `--night` nhận 1, 2 hoặc 3 (mặc định 1); giá trị khác, hoặc thiếu `--seed`/`--ticks`/`--out`: mã thoát 1. File scenario/inputs sai định dạng: mã thoát 2.
 - Output JSONL: snapshot tick 0, ngay sau đó event `night_start`, rồi `event` và `snapshot` (mỗi `--snapshot-every` tick; khi tạm dừng snapshot ghi `state: "paused"`), dòng `end` luôn cuối. Cùng seed + cùng đầu vào cho output giống hệt từng byte.
 - Input thêm `dash`, `pause`. Scenario thêm `player.{invuln_ticks, dash_cd_ticks, pulse_cd_ticks, charm_ticks, successful_lights}`, `lanterns[].{lit, fuel, ever_lit}`, `shades[].{state, state_ticks_left, target_lantern_id}`, `drifters`, `charms`, `random_drifters`, `wind_enabled`.
-- Snapshot v1.2: đèn có `fuel` (1 chữ số), `ever_lit`, `relit_count`; player có `capacity`; Bóng Mực có state `drain`.
+- Snapshot v1.2+: đèn có `fuel` (1 chữ số), `ever_lit`, `relit_count`; player có `capacity`; Bóng Mực có state `drain`.
 - Ví dụ scenario/inputs: `evidence/phase-3/scenarios/`, `evidence/phase-2/scenarios/` và `evidence/phase-1/scenarios/`.
 
-## Điều khiển
+## Bench (đo FPS)
 
-| Phím | Tác dụng |
+```
+node scripts/bench.mjs --seed 42 --duration 30 --out bench.json
+```
+
+Cần `npm run build` trước. Script dùng server đang chạy ở `PORT` (mặc định 4173) hoặc tự khởi `server.mjs`, mở Chrome có giao diện (Playwright, headed) cỡ 1280x720 với `--disable-gpu-vsync --disable-frame-rate-limit`, vào `/?bench=<seed>&duration=<s>`. Cảnh bench cố định theo seed (cờ `bench` của lõi tắt sinh thực thể, va chạm, hao dầu và kết thúc ván; cờ này mặc định false, không có trong snapshot, không rút RNG nên không đổi output headless). Bỏ 3 giây khởi động rồi đo `duration` giây.
+
+Kết quả đã commit ở `bench.json` (máy dev: Windows 10, NVIDIA GeForce GT 730, Chrome, three.js r170 WebGL2):
+
+| Trường | Giá trị |
 |---|---|
-| W A S D | Di chuyển (theo hướng camera) |
-| Space | Nhảy |
-| Shift | Lướt (dash): 12 tick ở 14 m/s, hồi chiêu 1.5 s |
-| E | Nạp đom đóm vào đèn gần nhất trong 2m: đèn tắt thì thắp (hoặc thắp lại), đèn sáng thì châm dầu |
-| F | Tỏa sáng (pulse): choáng và đẩy Bóng Mực trong 5m, tốn 3 đom đóm |
-| Kéo chuột / phím mũi tên trái-phải | Xoay camera (yaw đưa vào `cam_yaw_deg`) |
-| Esc / P | Tạm dừng / tiếp tục (lõi dừng hoàn toàn); menu có Tiếp tục, Chơi lại Đêm, Cài đặt, Về menu |
-| R | Chơi lại (ở màn kết thúc) |
+| avg_fps | 100.7 |
+| p1_low_fps | 33.1 |
+| frame_ms_p95 | 18 |
+| frames | 3020 |
+| load_ms | 3736 |
+| peak_mem_mb | 515 |
+| vsync_off | true |
 
-Cài đặt (âm lượng tổng 0-100, độ nhạy chuột 0.2-3.0) lưu ở `localStorage` key `dao-den-long.settings.v1`.
+Ghi chú:
+- **vsync:** tắt được bằng cờ Chrome nên `vsync_off: true`. Trên máy chỉ có một GPU yếu, tắt vsync làm CPU đẩy lệnh nhanh hơn GPU vẽ; để số FPS phản ánh GPU thật, game dùng một rào (fence) nhịp khung hình theo GPU (`src/web/gpu-frame-pacing-fence.ts`). Nhờ đó `avg_fps` không bị thổi phồng bởi các khung chưa được GPU vẽ xong.
+- **peak_mem_mb:** tổng RSS của cả cây tiến trình bench (Node + Chrome + các tiến trình con GPU/renderer), lấy mẫu mỗi 3 giây trong lúc đo. Là bộ nhớ vật lý của tiến trình, không phải heap JS và không gồm VRAM của GPU.
+- **p1_low_fps** là FPS ở nhóm 1% khung hình chậm nhất (33.1 trên GT 730, còn trên ngưỡng 30). Số đo phụ thuộc máy; số trong repo là của máy dev nói trên, không phải máy chấm.
+- Tối ưu vẽ trong Phase 4: shade và đom đóm dùng `InstancedMesh` (khoảng 800 xuống khoảng 100 draw call), vật liệu Lambert cho phần mờ đục, fence nhịp GPU.
+
+## Soak test
+
+```
+node dist-headless/soak.mjs --seed 7 --nights 10 --out soak.json
+```
+
+Chạy 10 Đêm liên tiếp bằng input ngẫu nhiên tất định (theo seed), đo bộ nhớ đầu và cuối. Kết quả ở `soak.json`: `crashes` 0, bộ nhớ 51 MB đến 57 MB. Dùng được `--seed`, `--nights`, `--out`.
+
+## Xuất bảng xếp hạng
+
+```
+node server.mjs --export-leaderboard out.json
+```
+
+Ghi `{"entries":[...]}` theo thứ tự bảng (từ `data/leaderboard.json`) rồi thoát 0. Cũng chạy được `npm start --export-leaderboard out.json`.
+
+## Bản phát hành
+
+`npm run release` (sau `npm run build`) tạo `release/dao-den-long-v1.0.0.zip` gồm `dist/`, `dist-headless/`, `server.mjs`, `scripts/`, `package.json`, `package-lock.json`, `game.contract.json`, README, LICENSE, CREDITS. Giải nén rồi `npm start` (hoặc `node server.mjs`) là chơi được, không cần `npm ci` vì server chỉ dùng Node built-in và `three`, `gsap` đã nằm trong `dist/`; chỉ cần Node >= 20. Chạy bench từ bản zip thì cần thêm `npm ci` (Playwright). File zip đính kèm GitHub Release `v1.0.0`.
 
 ## Ba Đêm
 
@@ -60,7 +134,7 @@ Mọi Đêm: không còn tường ở mép đảo, rơi xuống dưới y = -10 
 
 ## Số chuẩn
 
-Nguồn duy nhất cho tuning: `game.contract.json` (v1.2). Các số chuẩn khác của đề nằm trong `src/core/constants.ts` và `src/core/nights/`.
+Nguồn duy nhất cho tuning: `game.contract.json` (v1.3, tuning giữ nguyên từ v1.2). Các số chuẩn khác của đề nằm trong `src/core/constants.ts` và `src/core/nights/`.
 
 | Khóa | Giá trị | Khóa | Giá trị |
 |---|---|---|---|
@@ -123,7 +197,8 @@ Chi tiết đầy đủ: `docs/superpowers/specs/2026-11-20-dao-den-long-phase2-
 - **Thưởng bình minh** chỉ khi thắng (công thức ở mục tính điểm); hết Ngọn Lửa luôn thua và được xét trước. Mọi kết thúc xét ở bước 11 (không kết thúc giữa tick).
 - **Dầu và đèn (Phase 3):** dầu là số nguyên đơn vị 1/60 để ngưỡng 30 và 0 không lệch tick; thứ tự tick: bước 2 giảm bộ đếm rồi đốt/hút dầu và tắt đèn cạn; xem `docs/adr/0001-lantern-fuel-state-and-dawn-win.md`. Điểm Phase 3 (5/40/15...) là quyết định của người viết.
 - **Seed web** = `Date.now()` ở tầng web; lõi vẫn tất định.
-- **Kiểm thử:** `npm test` xanh ở cuối Phase 3 (kết quả ghi ở `evidence/phase-3/vitest.txt`). Phase 3 không thêm test mới theo quyết định của chủ dự án; test cũ bị luật mới làm sai được sửa hoặc xóa, ghi ở `CHANGELOG.md`.
+- **Kiểm thử:** `npm test` xanh ở cuối Phase 4 (178 test). Phase 3 không thêm test mới theo quyết định của chủ dự án; test cũ bị luật mới làm sai được sửa hoặc xóa, ghi ở `CHANGELOG.md`. Phase 4 đổi một kỳ vọng phá vỡ: `tests/smoke.test.ts` đọc contract 1.3 (trước đó 1.2).
+- **Bench/soak (Phase 4):** cờ `bench` của lõi mặc định false, không nằm trong snapshot, không rút RNG; soak dùng input ngẫu nhiên tất định theo seed. Bảng xếp hạng lưu ở tệp JSON của server (không có cơ sở dữ liệu), một server một tệp.
 
 ## Acceptance criteria cho 8 mục của Phần 3
 
@@ -142,6 +217,7 @@ Mục 5-8 và FPS (>= 30 ở 1280x720) thuộc bản web, được kiểm riêng
 
 - Landing page có hướng dẫn chơi (cách chơi, điều khiển, tính điểm, luật), game chỉ tải sau khi bấm Bắt đầu (từ Phase 1).
 - Phase 1: Mây đội nón lá treo đèn lồng, Bóng Mực khối tím, đảo sáng dần khi thắp đèn (low-poly dựng từ khối cơ bản).
+- Phase 4: tối ưu vẽ (instancing, Lambert, fence nhịp GPU) đưa bench trên GT 730 lên 100 FPS; bảng xếp hạng top 10 với server Node thuần; đổi phím 9 hành động, phụ đề và mũi tên chỉ Bóng Mực mới, chữ lớn, giảm chuyển động; script đóng gói `npm run release`; retro ở [`docs/retro.md`](docs/retro.md).
 - Phase 3: Đèn có thanh dầu trên đỉnh, nhấp nháy khi sắp cạn; Bóng Mực tới hút dầu đèn yếu; bảng màu dễ phân biệt (`#7A3CFF` sang `#00B3FF`); evidence và ADR cho mô hình dầu.
 - Phase 2: bộ scenario headless riêng cho từng tính năng và script sinh bằng chứng (`scripts/generate-evidence-phase-2.mjs`), skill dự án `dao-den-long-contract` để agent giữ đúng luật contract khi mở rộng.
 - Đồ họa đảo mới trong game (`src/web/decor/`): mỗi Đêm có địa hình stylized khớp đúng mặt đi của gameplay (cỏ, bãi cát, vách đá treo, bậc tầng, cầu tre), bầu trời trăng sao, biển mây, sương, đom đóm và đạo cụ riêng (làng chài Đêm 1, đảo cau Đêm 2, gác chuông Đêm 3). Ánh sáng vẫn theo công thức 0.15 + 0.55 x đèn sáng/tổng. Mây là nhân vật có khớp: tay chân vung theo tốc độ thật của người chơi (lướt nhanh hơn, đứng yên thì thở nhẹ), đèn trên nón và khăn lắc theo quán tính. Không bloom trong game để giữ FPS (khoảng 35-38 FPS ở 1280x720 trên máy dev). Ảnh: `evidence/decor-demo/game-night1.png`, `game-night2.png`, `game-night3.png`.
@@ -149,15 +225,16 @@ Mục 5-8 và FPS (>= 30 ở 1280x720) thuộc bản web, được kiểm riêng
 
 ## Bằng chứng
 
+- Phase 4: [`evidence/phase-4/`](evidence/phase-4/README.md) (ảnh chụp trợ năng và bảng xếp hạng), `bench.json`, `soak.json` ở gốc repo. Retro: [`docs/retro.md`](docs/retro.md); lịch sử thay đổi: [`CHANGELOG.md`](CHANGELOG.md); ghi công: [`CREDITS.md`](CREDITS.md).
 - Phase 3: [`evidence/phase-3/`](evidence/phase-3/): JSONL cho cạn dầu (`fuel-out`), châm dầu (`refuel`), thắp lại (`relight`), Bóng Mực hút dầu (`drain`), thắng và thua ở bình minh (`win-dawn`, `lose-dawn`); `determinism.txt`, `headless-timing.txt`, `vitest.txt` (chạy thật). Sinh lại: `npm run build && node scripts/generate-evidence-phase-3.mjs`. Quyết định thiết kế: [`docs/adr/0001-lantern-fuel-state-and-dawn-win.md`](docs/adr/0001-lantern-fuel-state-and-dawn-win.md); thay đổi phá vỡ: [`CHANGELOG.md`](CHANGELOG.md).
-- Phase 2: [`evidence/phase-2/`](evidence/phase-2/): JSONL cho dash, bục nhảy Đêm 2 và 3, rơi và hồi sinh, gió, Gió Lạc cướp/thả, bùa, tạm dừng, trạng thái Bóng Mực, vùng an toàn, thắng đúng tick bình minh; `determinism.txt` (cả 3 Đêm); `headless-timing.txt` (21600 tick mỗi Đêm). Sinh lại: `npm run build && node scripts/generate-evidence-phase-2.mjs`. `vitest.txt` chỉ ghi lý do không chạy lại test.
+- Phase 2: [`evidence/phase-2/`](evidence/phase-2/) (JSONL sinh bởi contract v1.1, xem ghi chú trong thư mục): JSONL cho dash, bục nhảy Đêm 2 và 3, rơi và hồi sinh, gió, Gió Lạc cướp/thả, bùa, tạm dừng, trạng thái Bóng Mực, vùng an toàn, thắng đúng tick bình minh; `determinism.txt` (cả 3 Đêm); `headless-timing.txt` (21600 tick mỗi Đêm). Sinh lại: `npm run build && node scripts/generate-evidence-phase-2.mjs`. `vitest.txt` chỉ ghi lý do không chạy lại test.
 - Phase 1: [`evidence/phase-1/README.md`](evidence/phase-1/README.md) và `node scripts/generate-evidence.mjs`.
 - Nhật ký dùng AI và giả định: [`docs/ai-log.md`](docs/ai-log.md); quy trình AI: [`AGENTS.md`](AGENTS.md), [`docs/ai-process/phase-1/`](docs/ai-process/phase-1/).
 
 ## Chạy chỉ bằng CPU (khi GPU bị lỗi hiển thị)
 
 ```
-npm run preview
+npm start
 npm run play:cpu
 ```
 

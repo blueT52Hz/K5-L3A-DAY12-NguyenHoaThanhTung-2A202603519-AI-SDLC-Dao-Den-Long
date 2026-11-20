@@ -3,3 +3,6 @@ dist
 dist-headless
 out
 .superpowers/
+data/
+release/
+/server.mjs

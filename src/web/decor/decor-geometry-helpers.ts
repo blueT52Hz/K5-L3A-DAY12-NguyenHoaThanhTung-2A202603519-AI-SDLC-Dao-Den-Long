@@ -1,13 +1,16 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
-/** Faceted standard material (low-poly look), no metalness. */
-export function flatMaterial(color: number, extra: THREE.MeshStandardMaterialParameters = {}): THREE.MeshStandardMaterial {
-  return new THREE.MeshStandardMaterial({ color, flatShading: true, roughness: 0.95, metalness: 0, ...extra });
+/**
+ * Faceted matte material (low-poly look). Lambert = same diffuse as the old rough (0.95), non-metal standard
+ * material without the GGX specular term: much cheaper per pixel with 7 point lights on a weak GPU.
+ */
+export function flatMaterial(color: number, extra: THREE.MeshLambertMaterialParameters = {}): THREE.MeshLambertMaterial {
+  return new THREE.MeshLambertMaterial({ color, flatShading: true, ...extra });
 }
 
 /** Faceted material that reads per-vertex colours (white base so instance colours still tint). */
-export function vertexColorMaterial(extra: THREE.MeshStandardMaterialParameters = {}): THREE.MeshStandardMaterial {
+export function vertexColorMaterial(extra: THREE.MeshLambertMaterialParameters = {}): THREE.MeshLambertMaterial {
   // colored() geometry already carries per-face normals; skipping flatShading avoids NaN normals
   // (derivative-based) on sub-pixel slivers, which bloom would smear into blocky artifacts.
   return flatMaterial(0xffffff, { vertexColors: true, flatShading: false, ...extra });

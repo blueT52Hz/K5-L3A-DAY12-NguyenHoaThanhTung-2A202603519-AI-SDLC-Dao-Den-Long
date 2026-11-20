@@ -83,7 +83,7 @@ class StoneWallBuilder {
     geo.setAttribute('position', new THREE.Float32BufferAttribute(this.pos, 3));
     geo.setAttribute('color', new THREE.Float32BufferAttribute(this.col, 3));
     geo.computeVertexNormals();
-    const mat = new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 1, metalness: 0, side: THREE.DoubleSide });
+    const mat = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true, side: THREE.DoubleSide });
     const m = new THREE.Mesh(geo, mat);
     m.name = name;
     return m;
@@ -134,7 +134,7 @@ export function buildTierWallsAndStairs(cfg: NightConfig): THREE.Group {
   if (b.pos.length) g.add(b.mesh('tier-stone-walls'));
   const ramps = cfg.surfaces.filter((s): s is Ramp => s.kind === 'ramp');
   if (ramps.length) {
-    const mat = new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 1, metalness: 0 });
+    const mat = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
     const stairs = new THREE.Mesh(mergeColored(ramps.map((r) => buildRampStairs(r, 0))), mat);
     stairs.name = 'ramp-stone-stairs';
     g.add(stairs);

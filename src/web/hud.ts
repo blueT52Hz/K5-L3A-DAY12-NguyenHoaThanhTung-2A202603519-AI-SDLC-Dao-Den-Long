@@ -7,12 +7,14 @@ import { isLowFuel } from '../core/systems/lantern-fuel';
 import { warnText } from './colorblind-mode';
 import { TICK_RATE } from '../core/constants';
 import { HUD_MARKUP, cooldownFraction, formatClock, interactPrompt, isClockDanger } from './hud/hud-layout';
+import { createCaptions, type Captions } from './hud/captions-and-edge-arrows';
 import { edgeArrow, nearestNeedyLantern } from './hud/lantern-pointer';
 
 let els: Record<string, HTMLElement> = {};
 let maxFlames = 3;
 let slotCount = -1;
 let root: HTMLElement;
+let captions: Captions;
 
 /** Write textContent only when changed (avoids per-frame DOM churn). */
 function setText(el: HTMLElement, text: string): void {
@@ -25,6 +27,7 @@ export function initHud(hudRoot: HTMLElement, onPauseClick: () => void): void {
   root.insertAdjacentHTML('afterbegin', `<div class="hud-game" data-k="game">${HUD_MARKUP}</div>`);
   els = {};
   root.querySelectorAll<HTMLElement>('[data-k]').forEach((e) => { els[e.dataset.k!] = e; });
+  captions = createCaptions(els.captions, els.shadearrow);
   els.pausebtn.addEventListener('click', onPauseClick);
 }
 
@@ -34,6 +37,7 @@ export function setHudVisible(v: boolean): void {
 
 export function resetHud(s: GameState): void {
   slotCount = -1;
+  captions.reset(s);
   maxFlames = Math.max(s.player.flames, 1);
 }
 
@@ -69,6 +73,8 @@ export function updateHud(s: GameState, camera: THREE.Camera): void {
   if (arrow?.visible) {
     els.arrow.style.transform = `translate(${arrow.x}px, ${arrow.y}px) rotate(${-arrow.angleRad}rad)`;
   }
+
+  captions.update(s, camera);
 
   const status: string[] = [];
   if (p.charmTicks > 0) status.push(`Bùa Gió ${Math.ceil(p.charmTicks / TICK_RATE)}s`);

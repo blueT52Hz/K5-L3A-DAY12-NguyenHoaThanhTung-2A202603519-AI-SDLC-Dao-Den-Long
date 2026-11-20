@@ -35,6 +35,8 @@ export const HUD_MARKUP = `
   <div class="hud-warn" data-k="warn"></div>
   <div class="hud-prompt" data-k="prompt"></div>
   <div class="hud-arrow" data-k="arrow"></div>
+  <div class="hud-arrow hud-shade-arrow" data-k="shadearrow" title="Bóng Mực"></div>
+  <div class="hud-captions" data-k="captions" role="status" aria-live="polite"></div>
   <div class="hud-motes" data-k="motes"></div>
   <div class="hud-cds">
     <div class="cd" data-k="dash"><span>Shift</span><b>Lướt</b></div>

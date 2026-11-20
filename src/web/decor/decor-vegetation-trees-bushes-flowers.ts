@@ -41,14 +41,14 @@ function buildBushGeometry(rnd: () => number): THREE.BufferGeometry {
   ]);
 }
 
-/** Flower head: five flat petals around a tiny centre (white base, tinted per instance). */
+/** Flower head: five flat petals around a tiny centre (white base, tinted per instance). ~48 tris: a head is a few px on screen. */
 function buildFlowerHeadGeometry(): THREE.BufferGeometry {
   const parts: THREE.BufferGeometry[] = [];
   for (let i = 0; i < 5; i++) {
     const a = (i / 5) * Math.PI * 2;
-    parts.push(colored(new THREE.SphereGeometry(0.07, 5, 3), 0xffffff, trs(Math.cos(a) * 0.08, 0, Math.sin(a) * 0.08, 0, -a, 0, 1, 0.3, 0.6)));
+    parts.push(colored(new THREE.SphereGeometry(0.07, 4, 2), 0xffffff, trs(Math.cos(a) * 0.08, 0, Math.sin(a) * 0.08, 0, -a, 0, 1, 0.3, 0.6)));
   }
-  parts.push(colored(new THREE.SphereGeometry(0.05, 5, 3), 0xffe08a, trs(0, 0.02, 0)));
+  parts.push(colored(new THREE.SphereGeometry(0.05, 4, 2), 0xffe08a, trs(0, 0.02, 0)));
   return mergeColored(parts);
 }
 

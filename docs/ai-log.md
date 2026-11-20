@@ -76,10 +76,35 @@
 - Một test đã đỏ từ trước Phase 3 (rng ở Đêm 2 do Gió Lạc sinh lúc tick 1200) được sửa ở test, code giữ nguyên.
 
 ## Kết quả
-- `npm run build` và `npm test` xanh (149 test); evidence `evidence/phase-3/` sinh bằng script, đủ 6 ca cạn dầu, châm dầu, thắp lại, drain, thắng và thua bình minh; determinism 3 Đêm byte-identical.
+- `npm run build` và `npm test` xanh (178 test, theo `evidence/phase-3/vitest.txt`; số 149 ghi trước đó là số cũ, đã sửa); evidence `evidence/phase-3/` sinh bằng script, đủ 6 ca cạn dầu, châm dầu, thắp lại, drain, thắng và thua bình minh; determinism 3 Đêm byte-identical.
 - Chưa kiểm trình duyệt thật trong task này (web do Task 6-7 và người chủ dự án xem).
 
 ## Retro Phase 3
 - Tốt: spec chốt rõ số nguyên và thứ tự tick trước khi code nên ít lệch; evidence bằng scenario nhỏ chạy nhanh.
 - Chưa tốt: không có test mới nên hành vi mới chỉ được bảo chứng bằng JSONL evidence.
 - Lần sau: giữ một test cho mỗi luật mới ngay trong task đó.
+
+---
+
+# Phase 4 (bình minh, v1.0.0, contract v1.3)
+
+## Quy trình
+1. Đọc `phase-4.html`, spec `docs/superpowers/specs/2026-11-20-dao-den-long-phase4-design.md` và plan `docs/superpowers/plans/2026-11-20-dao-den-long-phase4.md` (Task 1-6), nhánh `feat/phase-4`; mỗi task một subagent, file sở hữu riêng.
+2. Nội dung: cờ `bench` trong lõi và cảnh bench; `scripts/bench.mjs`; soak CLI; server Node + bảng xếp hạng; tối ưu vẽ (instancing, Lambert, rào nhịp GPU); trợ năng (đổi phím, phụ đề, mũi tên, giảm chuyển động, chữ lớn); Task 6 đóng gói và tài liệu.
+
+## Quyết định và giả định chính
+- Cờ `GameState.bench` mặc định false, không có trong snapshot, không rút RNG: output headless v1.0-v1.2 không đổi.
+- `peak_mem_mb` = tổng RSS cả cây tiến trình bench, lấy mẫu mỗi 3 giây (không phải heap JS, không gồm VRAM).
+- Bảng xếp hạng lưu ở `data/leaderboard.json` (gitignore), không dùng cơ sở dữ liệu.
+- Contract 1.3 chỉ đổi lệnh (`run_cmd`, `bench_cmd`, `soak_cmd`), tuning giữ nguyên v1.2.
+- Evidence JSONL của Phase 1 và 2 không sinh lại: chúng thuộc contract cũ (tag `phase-1`, `phase-2`), ghi chú trong từng thư mục.
+
+## Kết quả
+- `npm run build`, `npx tsc --noEmit`, `npm test` xanh: 178 test (không thêm test mới ở Phase 4). Thay đổi test phá vỡ duy nhất: `tests/smoke.test.ts` kỳ vọng contract 1.3.
+- `bench.json` (GT 730): avg_fps 100.7, p1_low_fps 33.1, frame_ms_p95 18, load_ms 3736, peak_mem_mb 515. `soak.json`: 10 Đêm, 0 crash, 51 -> 57 MB.
+- Bản phát hành `release/dao-den-long-v1.0.0.zip` tạo bằng `npm run release`.
+
+## Retro Phase 4
+- Tốt: đo trước tối ưu sau; cờ bench không đụng contract.
+- Chưa tốt: FPS ban đầu thấp trên GPU yếu, vsync tắt làm số đo ảo cho tới khi có rào nhịp GPU.
+- Chi tiết 4 phase: `docs/retro.md`.

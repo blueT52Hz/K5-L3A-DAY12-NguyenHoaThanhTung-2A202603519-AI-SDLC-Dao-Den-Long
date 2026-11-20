@@ -83,7 +83,7 @@ export function buildTopPatchMesh(cfg: NightConfig, patch: TopPatch, seed: numbe
   geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
   geo.setIndex(idx);
   geo.computeVertexNormals();
-  const mat = new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.95, metalness: 0, side: THREE.DoubleSide });
+  const mat = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true, side: THREE.DoubleSide });
   const mesh = new THREE.Mesh(geo, mat);
   mesh.name = patch.name;
   return mesh;

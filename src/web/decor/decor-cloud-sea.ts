@@ -42,10 +42,8 @@ export function buildCloudSea(lowQuality: boolean, islands: IslandFootprint[] = 
     }
   }
 
-  const geo = new THREE.IcosahedronGeometry(1, 2);
-  const mat = new THREE.MeshStandardMaterial({
-    color: 0xffffff, emissive: 0x0d1030, emissiveIntensity: 0.7, roughness: 1, metalness: 0, flatShading: false,
-  });
+  const geo = new THREE.IcosahedronGeometry(1, 1); // 80 tris per blob (detail 2 = 320): ~150 blobs, mostly under the island
+  const mat = new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0x0d1030, emissiveIntensity: 0.7 }); // matte: Lambert = old roughness 1 look
   const mesh = new THREE.InstancedMesh(geo, mat, blobs.length);
   mesh.name = 'cloud-sea';
   const cTop = new THREE.Color(P.cloudPuff), cLow = new THREE.Color(P.cloudSea), tmp = new THREE.Color();

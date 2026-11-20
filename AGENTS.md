@@ -22,10 +22,14 @@ Cùng bộ skill `superpowers`, luồng: brainstorming -> spec -> plan -> subage
 - Spec: `docs/superpowers/specs/2026-11-20-dao-den-long-phase2-design.md` (mọi [TQ] là giả định, ghi ở README).
 - Plan: `docs/superpowers/plans/2026-11-20-dao-den-long-phase2.md` (Task 0-11).
 - Sổ SDD (ledger, báo cáo từng task, rulings): `.superpowers/sdd/2026-11-20-dao-den-long-phase2/` (`progress.md`, `task-*-report.md`).
-- Skill dự án: `.claude/skills/dao-den-long-contract/SKILL.md` (luật contract v1.1, thứ tự 12 bước của tick, cách thêm scenario và evidence, lệnh kiểm tra).
+- Skill dự án: `.claude/skills/dao-den-long-contract/SKILL.md` (luật contract v1.3, thứ tự 12 bước của tick, cách thêm scenario và evidence, lệnh kiểm tra).
 - Bằng chứng: `scripts/generate-evidence-phase-2.mjs` sinh JSONL cho từng tính năng mới, determinism cả 3 Đêm, thời gian chạy; scenario ở `evidence/phase-2/scenarios/`.
 - Quyết định của chủ dự án khi hết thời gian: bỏ chạy `npm test` và review từng task ở giai đoạn cuối; chỉ `npx tsc --noEmit` / `npm run build` trước khi commit. `evidence/phase-2/vitest.txt` ghi rõ điều này. Rủi ro: hành vi chưa được test lại có thể hồi quy.
 - Không `git add -A`; mỗi agent chỉ thêm file mình sở hữu (nhiều agent commit song song, gặp `index.lock` thì chờ và thử lại). Không push, không tag khi chưa được đồng ý.
+
+## Phase 3 và 4 (contract v1.2, v1.3)
+
+Cùng luồng superpowers. Phase 3: luật dầu đèn và thắng ở bình minh (ADR `docs/adr/0001-lantern-fuel-state-and-dawn-win.md`). Phase 4 (v1.0.0, contract v1.3): bench, soak, server + bảng xếp hạng, trợ năng, đóng gói; spec/plan `docs/superpowers/specs|plans/2026-11-20-dao-den-long-phase4*.md`. Cờ `bench` của lõi mặc định false, không vào snapshot, không rút RNG. Skill dự án đã cập nhật lên v1.3. Retro: `docs/retro.md`.
 
 ## Quy tắc làm việc
 

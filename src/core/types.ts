@@ -37,6 +37,8 @@ export interface GameState { night: NightId; tick: number; simTick: number; paus
   // safeZoneLanternIds: lit lanterns whose safe zone updateSafeZones has already seen (a lit lantern not in it was just lit).
   shadeSpawnEnabled: boolean; safeZoneLanternIds: string[];
   windEnabled: boolean; drifterSpawnEnabled: boolean; moteSpawnEnabled: boolean;
+  // bench: benchmark scene (createBenchGame) - no spawns, hits, pickups, fuel use or end of night. Never in snapshots.
+  bench: boolean;
   prevButtons: { jump: boolean; interact: boolean; pulse: boolean; dash: boolean; pause: boolean } }
 export interface Scenario {
   player?: { pos?: Vec3; carried?: number; flames?: number; invuln_ticks?: number; dash_cd_ticks?: number; pulse_cd_ticks?: number; charm_ticks?: number; successful_lights?: number };

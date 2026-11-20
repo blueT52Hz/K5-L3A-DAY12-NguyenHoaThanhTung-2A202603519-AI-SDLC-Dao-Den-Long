@@ -31,7 +31,7 @@
 .ln-inline-lantern b { width: 0.3em; height: 0.42em; border-radius: 40% 40% 45% 45%; background: #fff1c9;
   box-shadow: 0 0 18px 6px rgba(255, 200, 110, 0.9); animation: ln-flicker 2.4s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
 @keyframes ln-flicker { 0%, 100% { opacity: 1; transform: scale(1); } 45% { opacity: 0.78; transform: scale(0.92); } 70% { opacity: 0.95; transform: scale(1.04); } }
-.ln-lede { max-width: 38rem; margin-top: 30px; font-size: clamp(1.02rem, 1.3vw, 1.18rem); line-height: 1.7; color: var(--ln-muted); }
+.ln-lede { max-width: 38rem; margin-top: 30px; font-size: max(18px, clamp(1.02rem, 1.3vw, 1.18rem)); line-height: 1.7; color: var(--ln-muted); }
 .ln-cta-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 44px; }
 
 /* Scroll cue: hairline capsule with a dropping dot. */

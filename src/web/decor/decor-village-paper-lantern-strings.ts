@@ -49,9 +49,7 @@ export function buildPaperLanternStrings(spans: [THREE.Vector3, THREE.Vector3][]
       ms.push(trs(p.x, p.y - 0.3, p.z, 0, k * 0.7, 0, 0.85 + (k % 3) * 0.12));
     }
   }
-  const mat = new THREE.MeshStandardMaterial({
-    color: P.paperLantern, emissive: 0xff4a1c, emissiveIntensity: 0.95, roughness: 0.8, vertexColors: true,
-  });
+  const mat = new THREE.MeshLambertMaterial({ color: P.paperLantern, emissive: 0xff4a1c, emissiveIntensity: 0.95, vertexColors: true }); // matte paper
   g.add(instancedFrom(buildPaperLanternGeometry(), mat, ms, 'paper-lanterns'));
   return g;
 }

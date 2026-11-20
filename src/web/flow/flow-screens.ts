@@ -6,6 +6,7 @@ import { GAME_OVER_COPY, OLD_MAN_LINES } from './night-intro-text';
 export interface FlowScreenActions {
   onPlay(): void;
   onSettings(): void;
+  onLeaderboard(): void;
   onBeginNight(): void;
   onContinue(): void;
   onRetry(): void;
@@ -34,8 +35,8 @@ export function createFlowScreens(root: HTMLElement, a: FlowScreenActions): Flow
   return {
     menu: () => show(
       `<h1>Đảo Đèn Lồng</h1><p class="sub">Ba đêm, ba hòn đảo, một ngọn lửa nhỏ.</p>
-       <button data-k="play">Chơi</button><button data-k="set">Cài đặt</button>`,
-      { play: a.onPlay, set: a.onSettings }),
+       <button data-k="play">Chơi</button><button data-k="lb">Bảng xếp hạng</button><button data-k="set">Cài đặt</button>`,
+      { play: a.onPlay, lb: a.onLeaderboard, set: a.onSettings }),
     intro: (night) => show(
       `<div class="kicker">Đêm ${night}</div><h1>${getNight(night).name}</h1>
        <p class="quote">"${OLD_MAN_LINES[night]}"</p><p class="sub">- Ông Đăng</p>

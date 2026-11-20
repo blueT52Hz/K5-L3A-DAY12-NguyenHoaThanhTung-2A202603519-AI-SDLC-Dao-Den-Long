@@ -10,6 +10,7 @@ import type { NightId } from '../../core/types';
 import { navHeroStoryMarkup } from './landing-markup-nav-hero-story';
 import { levelSelectMarkup } from './landing-markup-level-select';
 import { guideSectionsMarkup } from './landing-markup-guide-sections';
+import { showLeaderboard } from '../leaderboard/leaderboard-screens';
 import { initLandingMotion, playLandingExit } from './landing-motion-gsap';
 
 const FIREFLY_COUNT = 36;
@@ -88,5 +89,11 @@ export function mountLanding(root: HTMLElement, onStart: (night?: NightId) => vo
       onStart(night);
     }
   };
+  // Nav links (#bang-xep-hang) and the section button open the leaderboard modal instead of scrolling.
+  root.querySelectorAll<HTMLElement>('[data-leaderboard], a[href="#bang-xep-hang"]').forEach((el) => el.addEventListener('click', (e) => {
+    e.preventDefault();
+    document.body.classList.remove('ln-menu-open');
+    showLeaderboard();
+  }));
   root.querySelectorAll<HTMLElement>('[data-start]').forEach((btn) => btn.addEventListener('click', () => void start(startNightOf(btn))));
 }

@@ -35,5 +35,8 @@ export function levelSelectMarkup(): string {
     ${eyebrow('Chọn màn')}
     <h2 class="ln-h2" data-reveal>Chọn đêm bạn muốn giữ đèn</h2>
     <div class="ln-level-grid">${NIGHT_IDS.map(levelCard).join('')}</div>
+    <div class="ln-lb-row" id="bang-xep-hang" data-reveal>
+      <button type="button" class="ln-btn ln-btn-ghost ln-btn-md" data-leaderboard><span class="ln-btn-label">Bảng xếp hạng</span></button>
+    </div>
   </section>`;
 }

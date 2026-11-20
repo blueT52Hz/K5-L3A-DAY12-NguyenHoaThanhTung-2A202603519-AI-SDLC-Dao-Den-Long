@@ -67,7 +67,7 @@ export function buildCliffUnderside(spot: UndersideSpot = NIGHT_1_SPOT): THREE.M
   geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
   geo.setIndex(idx);
   geo.computeVertexNormals();
-  const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 1, metalness: 0 }));
+  const mesh = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true }));
   mesh.name = 'island-cliff';
   return mesh;
 }
@@ -84,7 +84,7 @@ export function buildRootsAndFloatingRocks(lowQuality: boolean, spot: UndersideS
   const rootGeo = new THREE.ConeGeometry(0.12, 1, 4, 3);
   rootGeo.translate(0, -0.5, 0); // hang from the tip-top anchor
   const rootCount = Math.round((lowQuality ? 30 : 70) * k);
-  const roots = new THREE.InstancedMesh(rootGeo, new THREE.MeshStandardMaterial({ color: P.root, flatShading: true, roughness: 1 }), rootCount);
+  const roots = new THREE.InstancedMesh(rootGeo, new THREE.MeshLambertMaterial({ color: P.root, flatShading: true }), rootCount);
   for (let i = 0; i < rootCount; i++) {
     const a = rnd() * Math.PI * 2;
     const r = spot.r - 3.5 + rnd() * 3.2;
@@ -99,7 +99,7 @@ export function buildRootsAndFloatingRocks(lowQuality: boolean, spot: UndersideS
   const rockCount = Math.round((lowQuality ? 8 : 18) * k);
   const rocks = new THREE.InstancedMesh(
     new THREE.DodecahedronGeometry(1, 0),
-    new THREE.MeshStandardMaterial({ color: 0xffffff, flatShading: true, roughness: 1 }), rockCount,
+    new THREE.MeshLambertMaterial({ color: 0xffffff, flatShading: true }), rockCount,
   );
   const cA = new THREE.Color(P.rockLight), cB = new THREE.Color(P.rockDark), tmp = new THREE.Color();
   for (let i = 0; i < rockCount; i++) {

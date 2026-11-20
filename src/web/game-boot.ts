@@ -20,6 +20,8 @@ import { createSettingsPanel } from './settings/settings-panel';
 import { setColorblind } from './colorblind-mode';
 import { AudioEngine } from './audio/audio-engine';
 import { soundForEvent } from './audio/event-to-sound';
+import { showLeaderboard, showScoreEntry } from './leaderboard/leaderboard-screens';
+import { getBindings, isCapturingKey } from './settings/key-bindings';
 
 let booted = false;
 const RESULT_DELAY_S = 1.2;
@@ -51,10 +53,12 @@ export function bootGame(startNight?: NightId): void {
   let lastWindWarn = false;
   let prevJump = false;
   let hiddenPauseSent = false;
+  let runSeed = 0; // seed of the night core state currently in play (sent with the leaderboard score)
 
   /** Fresh night: new core state (web shell may use Date for the seed). */
   function loadNight(night: NightId): void {
-    state = createGame(Date.now() % 2147483647, devScenarioFromUrl(window.location.search, night) ?? {}, night);
+    runSeed = Date.now() % 2147483647;
+    state = createGame(runSeed, devScenarioFromUrl(window.location.search, night) ?? {}, night);
     sync.reset(state);
     resetHud(state);
     clearInput();
@@ -71,22 +75,27 @@ export function bootGame(startNight?: NightId): void {
     (night) => { flow.startRun(night); settings.close(); pause.show(false); enterPhase(); },
   );
 
+  /** Score entry modal over the dawn / loss screen; skipping or a network error never blocks continuing. */
+  const askForName = (): void => showScoreEntry({ score: flow.total, nights_won: flow.nightsWon, seed: runSeed }, () => undefined);
+
   const enterPhase = (): void => {
     const ph = flow.phase;
     if (ph.kind === 'playing') { loadNight(ph.night); screens.hide(); audio.setMusic(true); }
     else if (ph.kind !== 'result') audio.setMusic(false);
     if (ph.kind === 'menu') screens.menu();
     else if (ph.kind === 'intro') screens.intro(ph.night);
-    else if (ph.kind === 'dawn') screens.dawn(flow.total);
+    else if (ph.kind === 'dawn') { screens.dawn(flow.total); askForName(); }
     else if (ph.kind === 'result') {
       audio.setMusic(false);
       screens.result(ph.night, ph.won, ph.nightScore, flow.total, overReason);
+      if (!ph.won) askForName();
     }
     setHudVisible(ph.kind === 'playing');
   };
   const screens = createFlowScreens(hudRoot, {
     onPlay: () => { flow.startRun(); enterPhase(); },
     onSettings: () => settings.open(),
+    onLeaderboard: () => showLeaderboard(),
     onBeginNight: () => { flow.beginNight(); enterPhase(); },
     onContinue: () => { flow.continueFromResult(); enterPhase(); },
     onRetry: () => { flow.continueFromResult(); enterPhase(); },
@@ -99,7 +108,7 @@ export function bootGame(startNight?: NightId): void {
     onMenu: () => { flow.toMenu(); pause.show(false); enterPhase(); },
   });
   window.addEventListener('keydown', (e) => {
-    if ((e.code === 'KeyP' || e.code === 'Escape') && !e.repeat && flow.phase.kind === 'playing') {
+    if ((e.code === getBindings().pause || e.code === 'Escape') && !e.repeat && !isCapturingKey() && flow.phase.kind === 'playing') {
       if (document.querySelector('.settings-modal.show')) settings.close();
       else requestPause();
     }

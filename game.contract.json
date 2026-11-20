@@ -1,9 +1,11 @@
 {
-  "contract_version": "1.2",
+  "contract_version": "1.3",
   "team": "2A202603519-nguyen-hoa-thanh-tung",
   "build_cmd": "npm ci && npm run build",
-  "run_cmd": "npm run preview",
+  "run_cmd": "npm start",
   "headless_cmd": "node dist-headless/headless.mjs",
+  "bench_cmd": "node scripts/bench.mjs",
+  "soak_cmd": "node dist-headless/soak.mjs",
   "tuning": {
     "player_speed": 6,
     "carry_capacity": 10,

@@ -5,7 +5,7 @@ import { eyebrow, ghostLink, startButton } from './landing-ui-primitives';
 
 const MINUTES = Math.round(TUNING.night1_duration_s / 60);
 
-const NAV_LINKS: [string, string][] = [['#chon-man', 'Chọn màn'], ['#cach-choi', 'Cách chơi'], ['#dieu-khien', 'Điều khiển'], ['#luat-choi', 'Luật chơi']];
+const NAV_LINKS: [string, string][] = [['#chon-man', 'Chọn màn'], ['#bang-xep-hang', 'Bảng xếp hạng'], ['#cach-choi', 'Cách chơi'], ['#dieu-khien', 'Điều khiển'], ['#luat-choi', 'Luật chơi']];
 
 const MARQUEE_WORDS = ['Nhặt đom đóm', 'Thắp đèn lồng', 'Né Bóng Mực', 'Tỏa sáng', 'Về trước bình minh'];
 

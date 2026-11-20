@@ -39,6 +39,7 @@ export function createGame(seed: number, scenario: Scenario = {}, night: NightId
     rngState: seed >>> 0, nextMoteId: 1, nextShadeId: 1, nextDrifterId: 1,
     shadeSpawnEnabled: scenario.random_shades !== false, safeZoneLanternIds: [],
     windEnabled: scenario.wind_enabled !== false, drifterSpawnEnabled: scenario.random_drifters !== false, moteSpawnEnabled: scenario.random_motes !== false,
+    bench: false,
     prevButtons: { jump: false, interact: false, pulse: false, dash: false, pause: false },
   };
 
