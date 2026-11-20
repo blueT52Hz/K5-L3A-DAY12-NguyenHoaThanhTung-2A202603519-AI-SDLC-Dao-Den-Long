@@ -7,9 +7,8 @@ import { createControlPanel, type DemoState } from './decor-demo-control-panel';
 import { parseDecorDemoQuery } from './parse-decor-demo-query';
 import { createDemoBloomComposer } from './decor-demo-bloom-composer';
 import { applyCameraPreset } from './decor-demo-camera-presets';
+import { createDemoWalkingCharacter, type DemoWalkingCharacter } from './decor-demo-walking-character';
 
-// Temporary scope: always Night 1 (night buttons hidden, query night ignored).
-const NIGHT = 1 as const;
 const canvas = document.getElementById('scene') as HTMLCanvasElement;
 const fpsEl = document.getElementById('fps') as HTMLDivElement;
 
@@ -24,23 +23,25 @@ function main(): void {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
 
+  const search = window.location.search;
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 400);
   const controls = new OrbitControls(camera, canvas);
-  applyCameraPreset(window.location.search, camera, controls.target);
-  controls.update();
   const composer = createDemoBloomComposer(renderer, scene, camera);
-  const useBloom = new URLSearchParams(window.location.search).get('bloom') !== '0'; // ?bloom=0 for A/B perf checks
+  const useBloom = new URLSearchParams(search).get('bloom') !== '0'; // ?bloom=0 for A/B perf checks
+  const follow = new URLSearchParams(search).get('cam') === 'follow'; // ?cam=follow: chase-cam on the character
+  const followOffset = new THREE.Vector3(4.5, 3.2, 6.5);
 
-  const cfg = getNight(NIGHT);
-  const query = parseDecorDemoQuery(window.location.search);
+  const query = parseDecorDemoQuery(search);
   const state: DemoState = {
-    night: NIGHT, lit: Math.min(query.lit, cfg.lanterns.length),
-    layers: { terrain: true, props: true, atmosphere: true, glow: true },
+    night: query.night, lit: query.lit,
+    layers: { terrain: true, props: true, atmosphere: true, glow: true }, character: true,
   };
+  let builtNight = state.night;
 
   let handle: IslandDecorHandle | null = null;
   let models: Array<{ group: THREE.Group; setLit(lit: boolean): void }> = [];
+  let walker: DemoWalkingCharacter | null = null;
 
   /** Free GPU resources of a reference lantern (geometry + material, array-safe). */
   function disposeModel(g: THREE.Group): void {
@@ -57,9 +58,9 @@ function main(): void {
   /** Light the first `state.lit` lanterns (id order) on models and decor handle. No rebuild. */
   function applyLit(): void {
     const litIds: string[] = [];
-    cfg.lanterns.forEach((l, i) => {
+    getNight(builtNight).lanterns.forEach((l, i) => {
       const on = i < state.lit;
-      models[i].setLit(on);
+      models[i]?.setLit(on);
       if (on) litIds.push(l.id);
     });
     handle?.setLitLanterns(litIds);
@@ -67,31 +68,41 @@ function main(): void {
 
   function applyLayers(): void {
     (Object.keys(state.layers) as DecorLayer[]).forEach((k) => handle?.setLayerVisible(k, state.layers[k]));
+    if (walker) walker.group.visible = state.character;
   }
 
-  /** Full dispose + rebuild (night change path only), then re-apply layers + lit count. */
+  /** Full dispose + rebuild for state.night: decor, lantern models, walking character, camera framing. */
   function rebuild(): void {
     handle?.dispose();
     models.forEach((m) => disposeModel(m.group));
     models = [];
-    handle = buildIslandDecor(scene, NIGHT);
+    walker?.dispose();
+    builtNight = state.night;
+    const cfg = getNight(builtNight);
+    state.lit = Math.min(state.lit, cfg.lanterns.length);
+    handle = buildIslandDecor(scene, builtNight);
     cfg.lanterns.forEach((l) => {
       const m = createLanternModel(false);
       m.group.position.set(l.pos[0], l.pos[1], l.pos[2]);
       scene.add(m.group);
       models.push(m);
     });
+    walker = createDemoWalkingCharacter(scene, cfg);
+    applyCameraPreset(search, builtNight, camera, controls.target);
+    controls.update();
     applyLit();
     applyLayers();
   }
   rebuild();
 
   createControlPanel(
-    document.getElementById('panel') as HTMLElement, { night: NIGHT, lit: state.lit },
+    document.getElementById('panel') as HTMLElement, { night: state.night, lit: state.lit },
     (s) => {
+      state.night = s.night;
       state.lit = s.lit;
       state.layers = { ...s.layers };
-      if (s.night !== state.night) { rebuild(); return; } // hidden: demo is Night 1 only
+      state.character = s.character;
+      if (state.night !== builtNight) { rebuild(); return; }
       applyLit();
       applyLayers();
     },
@@ -116,6 +127,11 @@ function main(): void {
     while (stamps.length && now - stamps[0] > 1000) stamps.shift();
     if (stamps.length !== shownFps) { shownFps = stamps.length; fpsEl.textContent = `${shownFps} FPS`; }
     handle?.update(dt);
+    if (walker && state.character) walker.update(dt);
+    if (follow && walker) {
+      controls.target.copy(walker.group.position).y += 1;
+      camera.position.copy(controls.target).add(followOffset);
+    }
     controls.update();
     if (useBloom) composer.render();
     else renderer.render(scene, camera);

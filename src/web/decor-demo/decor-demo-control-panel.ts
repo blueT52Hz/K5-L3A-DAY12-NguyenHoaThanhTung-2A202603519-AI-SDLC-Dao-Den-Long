@@ -2,14 +2,14 @@ import type { DecorLayer } from '../decor';
 import type { DemoNightId } from './parse-decor-demo-query';
 import { getNight } from '../../core/nights';
 
-export interface DemoState { night: DemoNightId; lit: number; layers: Record<DecorLayer, boolean> }
+export interface DemoState { night: DemoNightId; lit: number; layers: Record<DecorLayer, boolean>; character: boolean }
 
 const LAYER_LABELS: Record<DecorLayer, string> = {
   terrain: 'Địa hình', props: 'Vật trang trí', atmosphere: 'Khí quyển', glow: 'Vòng sáng đèn',
 };
 
-/** Night buttons are hidden while only Night 1 is supported by the demo. */
-const SHOW_NIGHT_BUTTONS = false;
+/** Night buttons: every night has terrain, props, atmosphere and a walker path. */
+const SHOW_NIGHT_BUTTONS = true;
 
 export function createControlPanel(
   root: HTMLElement, init: { night: DemoNightId; lit: number },
@@ -18,7 +18,7 @@ export function createControlPanel(
   const maxLit = (n: DemoNightId): number => getNight(n).lanterns.length;
   const state: DemoState = {
     night: init.night, lit: init.lit,
-    layers: { terrain: true, props: true, atmosphere: true, glow: true },
+    layers: { terrain: true, props: true, atmosphere: true, glow: true }, character: true,
   };
   root.innerHTML = '';
   const title = document.createElement('h3');
@@ -34,12 +34,20 @@ export function createControlPanel(
     slider.value = String(Math.min(state.lit, Number(slider.max)));
     litLabel.firstChild!.textContent = `Đèn sáng: ${slider.value} `;
   };
+  const buttons: HTMLButtonElement[] = [];
+  const markActive = (): void => buttons.forEach((b, i) => { b.style.fontWeight = i + 1 === state.night ? 'bold' : 'normal'; });
   ([1, 2, 3] as DemoNightId[]).forEach((n) => {
     const b = document.createElement('button');
     b.textContent = `Đêm ${n}`;
-    b.onclick = () => { state.night = n; state.lit = Math.min(state.lit, maxLit(n)); refreshSlider(); onChange(state); };
+    b.onclick = () => {
+      if (state.night === n) return;
+      state.night = n; state.lit = Math.min(state.lit, maxLit(n));
+      refreshSlider(); markActive(); onChange(state);
+    };
+    buttons.push(b);
     nightRow.append(b);
   });
+  markActive();
   root.append(nightRow);
 
   slider.type = 'range'; slider.min = '0'; slider.step = '1';
@@ -56,4 +64,11 @@ export function createControlPanel(
     label.append(cb, ` ${LAYER_LABELS[layer]}`);
     root.append(label);
   });
+
+  const charLabel = document.createElement('label');
+  const charCb = document.createElement('input');
+  charCb.type = 'checkbox'; charCb.checked = state.character;
+  charCb.onchange = () => { state.character = charCb.checked; onChange(state); };
+  charLabel.append(charCb, ' Nhân vật');
+  root.append(charLabel);
 }
