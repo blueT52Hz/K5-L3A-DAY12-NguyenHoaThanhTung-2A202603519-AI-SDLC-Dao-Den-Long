@@ -177,5 +177,7 @@ describe('time', () => {
   it('dawn at tick 60', () => {
     const s = bare({ time_left_s: 1 });
     expect(run(s, {}, 100)).toEqual([{ tick: 60, name: 'game_over', data: { result: 'lost', reason: 'dawn' } }]);
+    expect(s.timeLeftS).toBe(0);
+    expect(s.tick).toBe(60);
   });
 });

@@ -163,6 +163,7 @@ describe('hit (spec 6.6)', () => {
     const ev = run(s, {}, 1);
     expect(ev.map((e) => e.name)).toEqual(['player_hit', 'game_over']);
     expect(ev[1].data).toEqual({ result: 'lost', reason: 'no_flames' });
+    expect(s.status).toBe('lost');
   });
   it('drops over void fall back to the player XZ at ground Y', () => {
     const s = bare({ player: { pos: [39.5, 0, 0], carried: 10 }, shades: [{ pos: [39.4, 0, 0.3] }] });
