@@ -1,6 +1,6 @@
-import { getNight } from '../nights';
 import type { GameState } from '../types';
 import { respawnPlayer } from './player-fall-respawn';
+import { endTimedShadeState } from './shade-ai';
 
 /** Decrement a counter, never below 0. */
 const dec = (n: number): number => (n > 0 ? n - 1 : 0);
@@ -39,22 +39,11 @@ export function tickTimers(s: GameState): void {
     sh.pushTicks = dec(sh.pushTicks);
     sh.headingTicks = dec(sh.headingTicks);
     sh.evictTicks = dec(sh.evictTicks);
-    // Interim Phase 1 transition (Task 5 adds the full state machine).
-    if (sh.state === 'stunned' && sh.stateTicks === 0) sh.state = 'chase';
+    endTimedShadeState(s, sh); // spawning / stunned / recoil end on the tick their counter reaches 0
   }
 
   for (const d of s.drifters) {
     d.stateTicks = dec(d.stateTicks);
     d.headingTicks = dec(d.headingTicks);
   }
-
-  // Interim Phase 1 shade spawner countdown (Task 5 replaces it with the simTick schedule).
-  if (s.spawnEnabled && s.spawnTicks > 0) s.spawnTicks -= 1;
-}
-
-/** Interim: true (and timer reset) when the periodic Phase 1 shade spawn is due. */
-export function spawnDue(s: GameState): boolean {
-  if (!s.spawnEnabled || s.spawnTicks > 0) return false;
-  s.spawnTicks = getNight(s.night).shadeIntervalTicks;
-  return true;
 }
