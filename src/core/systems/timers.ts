@@ -43,7 +43,10 @@ export function tickTimers(s: GameState): void {
   }
 
   for (const d of s.drifters) {
+    const wasTiming = d.stateTicks > 0;
     d.stateTicks = dec(d.stateTicks);
+    // Fleeing (flight or post-drop vanish) ends as `removed` on the tick its counter reaches 0.
+    if (wasTiming && d.stateTicks === 0 && d.state === 'flee') d.state = 'removed';
     d.headingTicks = dec(d.headingTicks);
   }
 }

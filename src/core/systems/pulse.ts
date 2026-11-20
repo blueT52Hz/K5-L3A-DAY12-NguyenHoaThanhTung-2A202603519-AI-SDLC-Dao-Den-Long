@@ -28,7 +28,7 @@ export function usePulse(s: GameState, events: GameEvent[]): void {
     sh.stateTicks = Math.round(TUNING.pulse_stun_s * TICK_RATE);
     s.score += TUNING.score.per_stun;
   }
-  pulseDrifters(s, center);
+  pulseDrifters(s, center, events);
   p.pulseCooldownTicks = Math.round(TUNING.pulse_cooldown_s * TICK_RATE);
   events.push({ tick: s.tick, name: 'pulse', data: { stunned_ids: [...hit].sort(compareShadeIds).map((sh) => sh.id) } });
 }

@@ -1,3 +1,4 @@
+import { DRIFTER_FLEE_TICKS, DRIFTER_Y } from './constants';
 import { getNight } from './nights';
 import { pickInitialMotes } from './systems/mote-spawner';
 import { snapShadePos } from './systems/shade-movement-terrain';
@@ -36,7 +37,7 @@ export function createGame(seed: number, scenario: Scenario = {}, night: NightId
     wind: { warning: false, active: false, dirDeg: 0 },
     rngState: seed >>> 0, nextMoteId: 1, nextShadeId: 1, nextDrifterId: 1,
     shadeSpawnEnabled: scenario.random_shades !== false, safeZoneLanternIds: [],
-    windEnabled: scenario.wind_enabled !== false, drifterSpawnEnabled: true, moteSpawnEnabled: scenario.random_motes !== false,
+    windEnabled: scenario.wind_enabled !== false, drifterSpawnEnabled: scenario.random_drifters !== false, moteSpawnEnabled: scenario.random_motes !== false,
     prevButtons: { jump: false, interact: false, pulse: false, dash: false, pause: false },
   };
 
@@ -89,6 +90,21 @@ export function createGame(seed: number, scenario: Scenario = {}, night: NightId
     });
   }
   s.nextShadeId = maxIdNumber(s.shades.map((x) => x.id)) + 1;
+
+  if (scenario.drifters) {
+    const used = new Set(scenario.drifters.map((x) => x.id).filter((x): x is string => !!x));
+    let n = 1;
+    s.drifters = scenario.drifters.map((x) => {
+      let id = x.id;
+      if (!id) { while (used.has(`D${n}`)) n++; id = `D${n}`; used.add(id); }
+      const state = x.state ?? 'idle';
+      return {
+        id, pos: [x.pos[0], DRIFTER_Y, x.pos[2]] as Vec3, state, stolen: x.stolen ?? 0,
+        stateTicks: state === 'flee' ? DRIFTER_FLEE_TICKS : 0, heading: [1, 0] as [number, number], headingTicks: 0,
+      };
+    });
+  }
+  s.nextDrifterId = maxIdNumber(s.drifters.map((x) => x.id)) + 1;
   return s;
 }
 
