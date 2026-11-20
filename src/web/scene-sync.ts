@@ -3,6 +3,7 @@ import type { GameState } from '../core/types';
 import {
   createEnvironment, createLanternModel, createMoteModel, createPlayerModel, createShadeModel,
 } from './models';
+import { shortestAngle } from './player-facing';
 
 type LanternModel = ReturnType<typeof createLanternModel>;
 
@@ -58,6 +59,10 @@ export class SceneSync {
       const shake = stunned ? Math.sin(state.tick * 1.7) * 0.15 : 0;
       obj.position.set(s.pos[0] + shake, s.pos[1], s.pos[2]);
       setOpacity(obj, stunned ? 0.4 : 1);
+      if (!stunned) { // eyes (+Z) turn toward the player, smoothed on the shortest arc
+        const target = Math.atan2(state.player.pos[0] - s.pos[0], state.player.pos[2] - s.pos[2]);
+        obj.rotation.y += shortestAngle(obj.rotation.y, target) * 0.25;
+      }
     }
 
     let lit = 0;
