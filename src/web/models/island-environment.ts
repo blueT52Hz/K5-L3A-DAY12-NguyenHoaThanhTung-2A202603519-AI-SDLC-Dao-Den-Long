@@ -1,26 +1,25 @@
 import * as THREE from 'three';
-
-const ISLAND_RADIUS = 40;
+import { ISLAND_RADIUS } from '../../core/constants';
 
 /** Floating island (top at y=0), cloud sea below, night sky, fog, dim lights. */
-export function createEnvironment(scene: THREE.Scene): { setBrightness(litCount: number): void } {
+export function createEnvironment(scene: THREE.Scene, boost = false): { setBrightness(litCount: number): void } {
   scene.background = new THREE.Color(0x1a1033);
-  scene.fog = new THREE.Fog(0x1a1033, 40, 140);
+  scene.fog = new THREE.Fog(0x1a1033, 60, 190);
 
   const top = new THREE.Mesh(
     new THREE.CylinderGeometry(ISLAND_RADIUS, ISLAND_RADIUS - 4, 2, 32),
-    new THREE.MeshStandardMaterial({ color: 0x2f4a33, roughness: 1 }),
+    new THREE.MeshStandardMaterial({ color: 0x6f9a52, roughness: 1 }),
   );
   top.position.y = -1;
   const rock = new THREE.Mesh(
     new THREE.ConeGeometry(ISLAND_RADIUS - 4, 22, 24),
-    new THREE.MeshStandardMaterial({ color: 0x4a3a52, roughness: 1 }),
+    new THREE.MeshStandardMaterial({ color: 0x7a6488, roughness: 1 }),
   );
   rock.rotation.x = Math.PI;
   rock.position.y = -13;
 
   // cloud sea: a few flattened spheres around and below
-  const cloudMat = new THREE.MeshStandardMaterial({ color: 0x6b5a99, roughness: 1 });
+  const cloudMat = new THREE.MeshStandardMaterial({ color: 0x9a86d0, roughness: 1 });
   const clouds = new THREE.Group();
   for (let i = 0; i < 14; i++) {
     const a = (i / 14) * Math.PI * 2;
@@ -31,15 +30,28 @@ export function createEnvironment(scene: THREE.Scene): { setBrightness(litCount:
     clouds.add(c);
   }
 
-  const ambient = new THREE.AmbientLight(0x5a4a8a, 0.25);
-  const hemi = new THREE.HemisphereLight(0x8a7ac8, 0x20152e, 0.15);
-  scene.add(top, rock, clouds, ambient, hemi);
+  // no shadows anywhere: ambient + hemisphere + one soft moon directional (all brightened by lit lanterns)
+  const ambient = new THREE.AmbientLight(0x8d7fc4, 0.9);
+  const hemi = new THREE.HemisphereLight(0xb4a8f0, 0x3a2a55, 0.7);
+  const moon = new THREE.DirectionalLight(0xc9c2ff, 0.9);
+  moon.position.set(-30, 50, 20);
+  scene.add(top, rock, clouds, ambient, hemi, moon);
+
+  const sky = new THREE.Color();
+  const skyDark = new THREE.Color(0x1a1033);
+  const skyLit = new THREE.Color(0x3a2458);
 
   return {
     setBrightness(litCount: number) {
       const t = Math.min(Math.max(litCount, 0), 5) / 5;
-      ambient.intensity = 0.25 + 0.6 * t;
-      hemi.intensity = 0.15 + 0.7 * t;
+      const b = boost ? 1.35 : 1; // CPU mode: no point lights, so lift ambient/hemi
+      ambient.intensity = (0.9 + 0.9 * t) * b;
+      hemi.intensity = (0.7 + 0.8 * t) * b;
+      moon.intensity = 0.9 + 0.7 * t;
+      moon.color.setHex(t > 0.5 ? 0xffe2b8 : 0xc9c2ff); // warmer as the island wakes
+      sky.copy(skyDark).lerp(skyLit, t);
+      (scene.background as THREE.Color).copy(sky);
+      scene.fog!.color.copy(sky);
     },
   };
 }

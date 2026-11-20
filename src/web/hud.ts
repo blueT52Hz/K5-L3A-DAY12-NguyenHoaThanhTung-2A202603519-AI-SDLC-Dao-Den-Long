@@ -1,12 +1,18 @@
 import './hud.css';
 import type { GameState } from '../core/types';
+import { TUNING } from '../core/tuning';
 
-const TOTAL_LANTERNS = 5;
-const CARRY_MAX = 10;
+const TOTAL_LANTERNS = TUNING.lantern_count_night1;
+const CARRY_MAX = TUNING.carry_capacity;
 const LOSS_REASON_DAWN = 'trời đã sáng';
 const LOSS_REASON_HP = 'hết máu';
 
 let els: Record<string, HTMLElement>;
+
+/** Write textContent only when changed (avoids per-frame DOM churn). */
+function setText(el: HTMLElement, text: string): void {
+  if (el.textContent !== text) el.textContent = text;
+}
 
 export function initHud(root: HTMLElement, onRestart: () => void): void {
   root.innerHTML = `
@@ -26,16 +32,16 @@ export function initHud(root: HTMLElement, onRestart: () => void): void {
 export function updateHud(s: GameState): void {
   const secs = Math.max(0, Math.ceil(s.timeLeftS));
   const lit = s.lanterns.filter((l) => l.lit).length;
-  els.hp.textContent = `Máu ${'🏮'.repeat(Math.max(0, s.player.flames))}`;
-  els.mote.textContent = `Đom đóm ${s.player.carried}/${CARRY_MAX}`;
-  els.lantern.textContent = `Đèn ${lit}/${TOTAL_LANTERNS}`;
-  els.time.textContent = `Thời gian ${String(Math.floor(secs / 60)).padStart(2, '0')}:${String(secs % 60).padStart(2, '0')}`;
-  els.score.textContent = `Điểm ${s.score}`;
+  setText(els.hp, `Máu ${'🏮'.repeat(Math.max(0, s.player.flames))}`);
+  setText(els.mote, `Đom đóm ${s.player.carried}/${CARRY_MAX}`);
+  setText(els.lantern, `Đèn ${lit}/${TOTAL_LANTERNS}`);
+  setText(els.time, `Thời gian ${String(Math.floor(secs / 60)).padStart(2, '0')}:${String(secs % 60).padStart(2, '0')}`);
+  setText(els.score, `Điểm ${s.score}`);
   const over = s.status !== 'playing';
   els.over.classList.toggle('show', over);
   if (over) {
     const reason = s.player.flames <= 0 ? LOSS_REASON_HP : LOSS_REASON_DAWN;
-    els.title.textContent = s.status === 'won' ? 'Thắng!' : `Thua - ${reason}`;
-    els.final.textContent = `Điểm: ${s.score}`;
+    setText(els.title, s.status === 'won' ? 'Thắng!' : `Thua - ${reason}`);
+    setText(els.final, `Điểm: ${s.score}`);
   }
 }

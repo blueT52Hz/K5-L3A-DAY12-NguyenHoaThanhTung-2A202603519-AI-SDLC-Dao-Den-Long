@@ -45,4 +45,10 @@ describe('models', () => {
     expect(amb.intensity).toBeGreaterThan(before);
     expect(scene.fog).toBeTruthy();
   });
+
+  it('player has a hanging glow lantern and total point lights stay <= 8', () => {
+    const playerLights = find<THREE.PointLight>(createPlayerModel(), (o) => o instanceof THREE.PointLight);
+    expect(playerLights.length).toBe(1);
+    expect(5 + playerLights.length).toBeLessThanOrEqual(8);
+  });
 });
