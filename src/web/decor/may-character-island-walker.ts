@@ -1,7 +1,7 @@
 import type { MayCharacter } from './may-character-factory';
 
 /**
- * Walks Mây along a smooth, gently wobbling loop around the Night 1 island centre and drives her
+ * Walks Mây along a smooth, gently wobbling loop around an island centre (default: Night 1) and drives her
  * animation. Deterministic (no Math.random): the same dt sequence always gives the same path.
  *
  * Night 1 lanterns all sit on a 25 m ring (L1 (0,0,25), L2 (23.8,0,7.7), L3 (14.7,0,-20.2),
@@ -14,8 +14,15 @@ export interface MayIslandWalker {
 }
 
 export interface MayIslandWalkerOptions {
-  /** Mean loop radius around (0,0,0) in metres (default 16, clamped to 4..18.9). */
+  /** Mean loop radius around the centre in metres (default 16, clamped to 4..maxRadius). */
   radius?: number;
+  /** Loop centre on the XZ plane (default (0, 0), the Night 1 island centre). */
+  centerX?: number;
+  centerZ?: number;
+  /** Scale of the radial wobble (default 1 = +-2.1 m; lower keeps narrow rings clear of obstacles). */
+  wobbleScale?: number;
+  /** Upper clamp for the mean radius (default 18.9, i.e. Night 1 lantern clearance at full wobble). */
+  maxRadius?: number;
   /** Cruise walking speed (default 1.4 m/s). */
   speedMps?: number;
   /** Walk this many seconds between ~2 s idle pauses (default 9). */
@@ -40,7 +47,11 @@ export function createMayIslandWalker(
   character: MayCharacter,
   opts: MayIslandWalkerOptions = {},
 ): MayIslandWalker {
-  const baseR = Math.min(MAX_RADIUS, Math.max(4, opts.radius ?? 16));
+  const baseR = Math.min(opts.maxRadius ?? MAX_RADIUS, Math.max(4, opts.radius ?? 16));
+  const cx = opts.centerX ?? 0;
+  const cz = opts.centerZ ?? 0;
+  const wa = WOBBLE_A * Math.max(0, opts.wobbleScale ?? 1);
+  const wb = WOBBLE_B * Math.max(0, opts.wobbleScale ?? 1);
   const cruise = Math.max(0, opts.speedMps ?? 1.4);
   const walkS = Math.max(1, opts.pauseEveryS ?? 9);
   const cycleS = walkS + PAUSE_S;
@@ -54,13 +65,13 @@ export function createMayIslandWalker(
   let yawInit = false;
 
   // radius and its derivative along the loop: a circle with two slow sine wobbles
-  const radiusAt = (t: number) => baseR + WOBBLE_A * Math.sin(3 * t + 0.5) + WOBBLE_B * Math.sin(5 * t + 1.7);
-  const radiusDeriv = (t: number) => 3 * WOBBLE_A * Math.cos(3 * t + 0.5) + 5 * WOBBLE_B * Math.cos(5 * t + 1.7);
+  const radiusAt = (t: number) => baseR + wa * Math.sin(3 * t + 0.5) + wb * Math.sin(5 * t + 1.7);
+  const radiusDeriv = (t: number) => 3 * wa * Math.cos(3 * t + 0.5) + 5 * wb * Math.cos(5 * t + 1.7);
 
   const place = () => {
     const r = radiusAt(theta);
-    const x = r * Math.cos(theta);
-    const z = r * Math.sin(theta);
+    const x = cx + r * Math.cos(theta);
+    const z = cz + r * Math.sin(theta);
     g.position.set(x, heightAt ? heightAt(x, z) : 0, z);
     // tangent of the curve for increasing theta; the character faces +Z, so yaw = atan2(dx, dz)
     const dr = radiusDeriv(theta);

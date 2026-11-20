@@ -4,9 +4,10 @@ import { DECOR_PALETTE as P } from './decor-palette';
 import { mulberry32 } from './seeded-random';
 import { scatterPoints } from './decor-scatter-placement';
 import { nearDockFootprint } from './decor-night-1-anchored-layout';
+import { baseDiscs } from './island-terrain-height-field';
 import { colored, flatMaterial, mergeColored, trs, vertexColorMaterial } from './decor-geometry-helpers';
 
-const GRASS_COUNT = 700;
+const GRASS_COUNT = 700; // per Night 1 island area (40 m disc); scaled by area for other nights
 const GRASS_LOW_FRACTION = 0.4;
 const GRASS_UNLIT = new THREE.Color(0x9aa6a4); // greyish when no lantern lit nearby
 const GRASS_LIT = new THREE.Color(0xffffff).lerp(new THREE.Color(P.lanternCore), 0.35); // warm tint near lit lanterns
@@ -17,6 +18,11 @@ export interface SharedProps {
   group: THREE.Group;
   refreshLitTint(): void;
   update(dtS: number): void;
+}
+
+/** Total base-disc area relative to the Night 1 island (1 for Night 1). */
+function areaScale(cfg: NightConfig): number {
+  return baseDiscs(cfg).reduce((a, d) => a + d.r * d.r, 0) / 1600;
 }
 
 /** Grass tuft: 5 bent tapered blades fanning out, dark at the root and light at the tips (vertex colours). */
@@ -44,16 +50,17 @@ function buildGrassTuftGeometry(): THREE.BufferGeometry {
 export function buildSharedProps(
   cfg: NightConfig, seed: number, lowQuality: boolean, isLitNear: (x: number, z: number) => boolean,
   heightAt: (x: number, z: number) => number = () => 0,
+  blocked: (x: number, z: number) => boolean = (x, z) => nearDockFootprint(cfg, x, z),
 ): SharedProps {
   const group = new THREE.Group();
   group.name = 'props-shared';
   const rnd = mulberry32(seed ^ 0x9e3779b1);
 
   // Grass: thin 4-sided cones, base at y=0 so they sway around their roots.
-  // Drop points inside the dock/boats/nets footprint so nothing pokes through them.
-  const clear = (pts: ReturnType<typeof scatterPoints>) => pts.filter((p) => !nearDockFootprint(cfg, p[0], p[2]));
+  // Drop points inside anchored-prop footprints (dock/boats/nets, pond, well...) so nothing pokes through them.
+  const clear = (pts: ReturnType<typeof scatterPoints>) => pts.filter((p) => !blocked(p[0], p[2]));
   const grassPts = clear(scatterPoints(cfg, {
-    seed: seed + 1, count: Math.round(GRASS_COUNT * (lowQuality ? GRASS_LOW_FRACTION : 1)),
+    seed: seed + 1, count: Math.round(GRASS_COUNT * areaScale(cfg) * (lowQuality ? GRASS_LOW_FRACTION : 1)),
     minRadiusFrac: 0.1, maxRadiusFrac: 0.93, minSpacing: 0.6,
   }));
   grassPts.forEach((p) => { p[1] = heightAt(p[0], p[2]) - 0.03; });

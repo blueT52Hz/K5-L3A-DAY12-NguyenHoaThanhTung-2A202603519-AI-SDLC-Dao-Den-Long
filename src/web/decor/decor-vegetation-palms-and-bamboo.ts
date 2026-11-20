@@ -49,7 +49,7 @@ function rachisY(t: number): number {
  * One pinnate frond along local +x (~3.4 m): a thin folded midrib with paired tapered leaflets
  * that sweep forward and droop, longest in the middle of the frond.
  */
-function buildFrondGeometry(): THREE.BufferGeometry {
+export function buildFrondGeometry(): THREE.BufferGeometry {
   const L = 3.4;
   const pos: number[] = [];
   const steps = 8;

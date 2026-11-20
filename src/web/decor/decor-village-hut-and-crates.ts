@@ -39,7 +39,7 @@ function buildCrateGeometry(): THREE.BufferGeometry {
 }
 
 /** Clay jar (lathe) with a dark mouth band. */
-function buildJarGeometry(): THREE.BufferGeometry {
+export function buildJarGeometry(): THREE.BufferGeometry {
   const profile = [[0, 0], [0.22, 0.02], [0.33, 0.2], [0.3, 0.45], [0.17, 0.6], [0.19, 0.68], [0.15, 0.7]]
     .map(([r, y]) => new THREE.Vector2(r, y));
   const body = new THREE.Color(P.jar), band = new THREE.Color(P.jar).multiplyScalar(0.55), tmp = new THREE.Color();
