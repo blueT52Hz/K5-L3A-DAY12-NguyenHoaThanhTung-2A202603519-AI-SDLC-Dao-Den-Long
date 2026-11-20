@@ -22,10 +22,12 @@ describe('movement', () => {
     run(s, { move: [1, 1] }, 60);
     expect(distXZ(s.player.pos, [0, 0, 0])).toBeCloseTo(6, 9);
   });
-  it('clamps to island', () => {
+  it('no invisible wall at the island edge: walks off and falls (was "clamps to island")', () => {
     const s = bare({ player: { pos: [39.9, 0, 0] } });
     run(s, { move: [1, 0] }, 10);
-    expect(distXZ(s.player.pos, [0, 0, 0])).toBeCloseTo(40, 9);
+    expect(distXZ(s.player.pos, [0, 0, 0])).toBeCloseTo(40.9, 9);
+    expect(s.player.pos[1]).toBeLessThan(0);
+    expect(s.player.grounded).toBe(false);
   });
   it('jumps on edge only', () => {
     const s = bare();

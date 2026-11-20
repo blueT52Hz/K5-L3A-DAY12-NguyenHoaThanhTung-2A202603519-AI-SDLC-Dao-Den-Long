@@ -1,5 +1,6 @@
 import { getNight } from '../nights';
 import type { GameState } from '../types';
+import { respawnPlayer } from './player-fall-respawn';
 
 /** Decrement a counter, never below 0. */
 const dec = (n: number): number => (n > 0 ? n - 1 : 0);
@@ -15,7 +16,9 @@ export function tickTimers(s: GameState): void {
   p.dashTicks = dec(p.dashTicks);
   p.dashCooldownTicks = dec(p.dashCooldownTicks);
   p.charmTicks = dec(p.charmTicks);
+  const waitingRespawn = p.respawnTicks > 0;
   p.respawnTicks = dec(p.respawnTicks);
+  if (waitingRespawn && p.respawnTicks === 0) respawnPlayer(s);
 
   // Dropped motes expire when their ttl reaches 0; random motes have ttl null.
   s.motes = s.motes.filter((m) => {
