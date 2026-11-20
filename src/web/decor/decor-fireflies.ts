@@ -2,6 +2,9 @@ import * as THREE from 'three';
 import { DECOR_PALETTE as P } from './decor-palette';
 import { mulberry32 } from './seeded-random';
 
+/** Island footprint used to spread decor over every base disc: centre and radius. */
+export interface IslandFootprint { cx: number; cz: number; r: number }
+
 // Drift + blink computed on the GPU from uTime; soft additive disc sprite (no texture, no DOM).
 const VERT = `
 uniform float uTime; uniform float uScale;
@@ -38,19 +41,23 @@ export interface FirefliesHandle {
   update(dtS: number): void;
 }
 
-/** Warm fireflies drifting over the island; brighter as more lanterns are lit. */
-export function buildFireflies(lowQuality: boolean): FirefliesHandle {
-  const count = lowQuality ? 60 : 170;
+const NIGHT_1_ISLAND: IslandFootprint[] = [{ cx: 0, cz: 0, r: 40 }];
+
+/** Warm fireflies drifting over the island(s); count scales with total area. Brighter as more lanterns are lit. */
+export function buildFireflies(lowQuality: boolean, islands: IslandFootprint[] = NIGHT_1_ISLAND, baseY = 0): FirefliesHandle {
+  const area = islands.reduce((a, d) => a + d.r * d.r, 0) / 1600;
+  const count = Math.round((lowQuality ? 60 : 170) * Math.min(1.4, Math.max(0.6, area)));
   const rnd = mulberry32(7777);
   const pos = new Float32Array(count * 3);
   const phase = new Float32Array(count);
   const size = new Float32Array(count);
   for (let i = 0; i < count; i++) {
+    const d = islands[i % islands.length];
     const a = rnd() * Math.PI * 2;
-    const r = Math.sqrt(rnd()) * 42;
-    pos[i * 3] = Math.cos(a) * r;
-    pos[i * 3 + 1] = 0.5 + rnd() * 3.2;
-    pos[i * 3 + 2] = Math.sin(a) * r;
+    const r = Math.sqrt(rnd()) * d.r * 1.05;
+    pos[i * 3] = d.cx + Math.cos(a) * r;
+    pos[i * 3 + 1] = baseY + 0.5 + rnd() * 3.2 + (d.r > 40 ? rnd() * 3 : 0);
+    pos[i * 3 + 2] = d.cz + Math.sin(a) * r;
     phase[i] = rnd() * Math.PI * 2;
     size[i] = 0.18 + rnd() * 0.22;
   }

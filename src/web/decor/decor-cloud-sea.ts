@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { DECOR_PALETTE as P } from './decor-palette';
 import { mulberry32 } from './seeded-random';
+import type { IslandFootprint } from './decor-fireflies';
 
 const BOB_AMP_M = 0.6;
 const BOB_SPEED = 0.35;
@@ -14,17 +15,22 @@ export interface CloudSeaHandle {
  * Cloud sea: puffy clusters of icosahedron blobs (one InstancedMesh) floating below the island,
  * each cluster bobbing slowly with its own phase. Fog fades distant clusters into the sky.
  */
-export function buildCloudSea(lowQuality: boolean): CloudSeaHandle {
+export function buildCloudSea(lowQuality: boolean, islands: IslandFootprint[] = [{ cx: 0, cz: 0, r: 40 }]): CloudSeaHandle {
   const rnd = mulberry32(4101);
-  const clusterCount = lowQuality ? 26 : 52;
+  const clusterCount = (lowQuality ? 26 : 52) + (islands.length - 1) * (lowQuality ? 6 : 12);
+  // Outer clusters spread around the centre of all islands; inner ones hug each island rim.
+  const mx = islands.reduce((a, d) => a + d.cx, 0) / islands.length;
+  const mz = islands.reduce((a, d) => a + d.cz, 0) / islands.length;
+  const ext = Math.max(...islands.map((d) => Math.hypot(d.cx - mx, d.cz - mz) + d.r));
   const blobs: { x: number; y: number; z: number; s: number; sy: number; rot: number; cluster: number }[] = [];
   const phases: number[] = [];
   for (let c = 0; c < clusterCount; c++) {
     const a = rnd() * Math.PI * 2;
     // Inner clusters hug the island rim, outer ones spread to the horizon.
     const inner = c < clusterCount * 0.35;
-    const d = inner ? 36 + rnd() * 26 : 60 + rnd() * 100;
-    const cx = Math.cos(a) * d, cz = Math.sin(a) * d;
+    const isl = islands[c % islands.length];
+    const d = inner ? isl.r * 0.9 + rnd() * 26 : ext + 20 + rnd() * 100;
+    const cx = (inner ? isl.cx : mx) + Math.cos(a) * d, cz = (inner ? isl.cz : mz) + Math.sin(a) * d;
     const cy = inner ? -9 - rnd() * 7 : -14 - rnd() * 8;
     const size = inner ? 3 + rnd() * 3 : 6 + rnd() * 8;
     phases.push(rnd() * Math.PI * 2);

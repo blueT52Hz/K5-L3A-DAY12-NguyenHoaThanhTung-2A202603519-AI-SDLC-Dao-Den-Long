@@ -3,7 +3,8 @@ import type { NightConfig } from '../../core/nights';
 import { DECOR_PALETTE as P } from './decor-palette';
 import { mulberry32 } from './seeded-random';
 import { buildCloudSea } from './decor-cloud-sea';
-import { buildFireflies } from './decor-fireflies';
+import { buildFireflies, type IslandFootprint } from './decor-fireflies';
+import { baseDiscs } from './island-terrain-height-field';
 import { MOON_POS, buildSkyMoonAndStars } from './decor-sky-moon-and-stars';
 
 /** Ambient light level: 0.15 base up to 0.70 when all lanterns are lit. */
@@ -27,14 +28,23 @@ export interface AtmosphereHandle {
 
 /** Sky background, fog, stars, moon, cloud sea, fireflies, drifting mist planes and lights. */
 export function buildAtmosphereLayer(scene: THREE.Scene, cfg: NightConfig, lowQuality: boolean): AtmosphereHandle {
+  // Everything is centred on the night's base discs (Night 2 spans x -28..98).
+  const discs = baseDiscs(cfg);
+  const islands: IslandFootprint[] = discs.length ? discs.map((d) => ({ cx: d.cx, cz: d.cz, r: d.r })) : [{ cx: 0, cz: 0, r: 40 }];
+  const mx = islands.reduce((a, d) => a + d.cx, 0) / islands.length;
+  const mz = islands.reduce((a, d) => a + d.cz, 0) / islands.length;
+  const ext = Math.max(...islands.map((d) => Math.hypot(d.cx - mx, d.cz - mz) + d.r));
+  const fogPad = Math.max(0, ext - 40);
+
   scene.background = new THREE.Color(P.sky);
-  scene.fog = new THREE.Fog(0x1e2350, 70, 210); // matches the sky-dome horizon band
+  scene.fog = new THREE.Fog(0x1e2350, 70 + fogPad, 210 + fogPad * 0.6); // matches the sky-dome horizon band
 
   const group = new THREE.Group();
   group.name = 'atmosphere';
   const sky = buildSkyMoonAndStars(lowQuality);
-  const clouds = buildCloudSea(lowQuality);
-  const fireflies = buildFireflies(lowQuality);
+  sky.group.position.set(mx, 0, mz);
+  const clouds = buildCloudSea(lowQuality, islands);
+  const fireflies = buildFireflies(lowQuality, islands, discs.length ? discs[0].y : 0);
   group.add(sky.group, clouds.mesh, fireflies.points);
 
   // Mist: soft horizontal discs drifting below the island rim on slowly rotating pivots.
@@ -46,12 +56,14 @@ export function buildAtmosphereLayer(scene: THREE.Scene, cfg: NightConfig, lowQu
   });
   const pivots: THREE.Group[] = [];
   const rnd = mulberry32(5150 + cfg.id);
-  const count = lowQuality ? 3 : MIST_COUNT;
+  const count = Math.ceil(((lowQuality ? 3 : MIST_COUNT) * (1 + (islands.length - 1) * 0.5)) / islands.length) * islands.length;
   for (let i = 0; i < count; i++) {
+    const isl = islands[i % islands.length];
     const pivot = new THREE.Group();
+    pivot.position.set(isl.cx, 0, isl.cz);
     pivot.rotation.y = (i / count) * Math.PI * 2 + rnd();
     const plane = new THREE.Mesh(mistGeo, mistMat);
-    plane.position.set(38 + rnd() * 12, -6 - rnd() * 8, 0);
+    plane.position.set(isl.r - 2 + rnd() * 12, -6 - rnd() * 8, 0);
     plane.rotation.x = -Math.PI / 2;
     pivot.add(plane);
     group.add(pivot);
@@ -62,8 +74,9 @@ export function buildAtmosphereLayer(scene: THREE.Scene, cfg: NightConfig, lowQu
   const ambient = new THREE.AmbientLight(0xdfe4ff, ambientIntensityFor(0, 1) * Math.PI);
   // One fixed moonlight, no shadow, from the moon direction.
   const moonLight = new THREE.DirectionalLight(0xc9d2ff, 1.0);
-  moonLight.position.set(...MOON_POS);
-  group.add(ambient, moonLight);
+  moonLight.position.set(MOON_POS[0] + mx, MOON_POS[1], MOON_POS[2] + mz);
+  moonLight.target.position.set(mx, 0, mz);
+  group.add(ambient, moonLight, moonLight.target);
 
   return {
     group,

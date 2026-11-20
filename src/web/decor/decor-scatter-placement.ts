@@ -2,6 +2,7 @@ import type { NightConfig, Surface } from '../../core/nights';
 import type { Vec3 } from '../../core/types';
 import { mulberry32 } from './seeded-random';
 import { isExcluded, scatterGroundY } from './decor-exclusion-zones';
+import { baseDiscs } from './island-terrain-height-field';
 
 export interface ScatterOptions {
   seed: number;
@@ -15,16 +16,7 @@ export interface ScatterOptions {
   maxAttempts?: number;
 }
 
-type Disc = Extract<Surface, { kind: 'disc' }>;
 type Rect = Extract<Surface, { kind: 'rect' }>;
-
-/** Island base discs: all discs sharing the lowest y (Night 2 has two). */
-function baseDiscs(cfg: NightConfig): Disc[] {
-  const discs = cfg.surfaces.filter((s): s is Disc => s.kind === 'disc');
-  if (discs.length === 0) return [];
-  const minY = Math.min(...discs.map((d) => d.y));
-  return discs.filter((d) => d.y === minY);
-}
 
 /**
  * Deterministic scatter of ground points on the island base disc(s).
