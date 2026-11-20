@@ -7,18 +7,17 @@ import { consumeRestart, getCamYawDeg, initInput, readInput, updateYaw } from '.
 import { updateCamera } from './camera-rig';
 import { SceneSync } from './scene-sync';
 import { initHud, updateHud } from './hud';
+import { createRenderer, detectQuality } from './render-quality';
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+const quality = detectQuality();
+const renderer = createRenderer(quality);
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x140824);
-scene.add(new THREE.AmbientLight(0x8a7ab8, 0.5)); // base fill; environment adds the rest
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 300);
 
-const sync = new SceneSync(scene);
+const sync = new SceneSync(scene, quality.pointLights);
 let state: GameState;
 
 function restart(): void {

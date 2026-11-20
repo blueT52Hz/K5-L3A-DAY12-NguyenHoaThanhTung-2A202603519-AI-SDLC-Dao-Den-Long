@@ -10,7 +10,8 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build && esbuild src/headless/cli.ts --bundle --platform=node --format=esm --outfile=dist-headless/headless.mjs",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "play:cpu": "node scripts/open-cpu-mode.mjs"
   },
   "dependencies": {
     "three": "^0.170.0"
