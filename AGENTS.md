@@ -15,6 +15,18 @@ Dự án dựng bằng Claude Code với bộ skill `superpowers`. Chủ dự á
    - Mỗi task có báo cáo; lõi có review riêng (Approved, các lỗi nhỏ đã xử lý hoặc ghi lại); tích hợp được review lần cuối.
 5. **Bằng chứng**: `scripts/generate-evidence.mjs` sinh JSONL, determinism và vitest; ảnh chụp lấy từ bản build thật.
 
+## Phase 2 (3 Đêm, contract v1.1)
+
+Cùng bộ skill `superpowers`, luồng: brainstorming -> spec -> plan -> subagent-driven development (mỗi task một implementer, chạy tuần tự hoặc song song theo file sở hữu; task nhỏ có review, task cuối không).
+
+- Spec: `docs/superpowers/specs/2026-11-20-dao-den-long-phase2-design.md` (mọi [TQ] là giả định, ghi ở README).
+- Plan: `docs/superpowers/plans/2026-11-20-dao-den-long-phase2.md` (Task 0-11).
+- Sổ SDD (ledger, báo cáo từng task, rulings): `.superpowers/sdd/2026-11-20-dao-den-long-phase2/` (`progress.md`, `task-*-report.md`).
+- Skill dự án: `.claude/skills/dao-den-long-contract/SKILL.md` (luật contract v1.1, thứ tự 12 bước của tick, cách thêm scenario và evidence, lệnh kiểm tra).
+- Bằng chứng: `scripts/generate-evidence-phase-2.mjs` sinh JSONL cho từng tính năng mới, determinism cả 3 Đêm, thời gian chạy; scenario ở `evidence/phase-2/scenarios/`.
+- Quyết định của chủ dự án khi hết thời gian: bỏ chạy `npm test` và review từng task ở giai đoạn cuối; chỉ `npx tsc --noEmit` / `npm run build` trước khi commit. `evidence/phase-2/vitest.txt` ghi rõ điều này. Rủi ro: hành vi chưa được test lại có thể hồi quy.
+- Không `git add -A`; mỗi agent chỉ thêm file mình sở hữu (nhiều agent commit song song, gặp `index.lock` thì chờ và thử lại). Không push, không tag khi chưa được đồng ý.
+
 ## Quy tắc làm việc
 
 - Lõi không import three/DOM, không `Math.random`/`Date`; tuning chỉ đọc từ `game.contract.json`.
@@ -27,4 +39,5 @@ Dự án dựng bằng Claude Code với bộ skill `superpowers`. Chủ dự á
 - Plan: `docs/superpowers/plans/`
 - Sổ SDD và báo cáo từng task: `docs/ai-process/phase-1/` (progress.md, task-*-report.md, review-*.md)
 - Nhật ký AI và giả định: `docs/ai-log.md`
+- Skill Phase 2: `.claude/skills/dao-den-long-contract/SKILL.md`
 - Harness: `CLAUDE.md`, `.claude/rules/*.md` và hook Stop thật (`.claude/settings.json` + `.claude/hooks/run-tests-before-stop.sh`: chạy `npm test`, chặn kết thúc khi test đỏ). Đã loại cấu hình cá nhân và khóa/token. Skill đã dùng là skill superpowers toàn cục, không vendor trong repo.
