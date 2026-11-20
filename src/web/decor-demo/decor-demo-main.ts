@@ -5,6 +5,8 @@ import { buildIslandDecor, type DecorLayer, type IslandDecorHandle } from '../de
 import { createLanternModel } from '../models/lantern-model';
 import { createControlPanel, type DemoState } from './decor-demo-control-panel';
 import { parseDecorDemoQuery } from './parse-decor-demo-query';
+import { createDemoBloomComposer } from './decor-demo-bloom-composer';
+import { applyCameraPreset } from './decor-demo-camera-presets';
 
 // Temporary scope: always Night 1 (night buttons hidden, query night ignored).
 const NIGHT = 1 as const;
@@ -24,10 +26,11 @@ function main(): void {
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 400);
-  camera.position.set(0, 16, 62);
   const controls = new OrbitControls(camera, canvas);
-  controls.target.set(0, 2, 0);
+  applyCameraPreset(window.location.search, camera, controls.target);
   controls.update();
+  const composer = createDemoBloomComposer(renderer, scene, camera);
+  const useBloom = new URLSearchParams(window.location.search).get('bloom') !== '0'; // ?bloom=0 for A/B perf checks
 
   const cfg = getNight(NIGHT);
   const query = parseDecorDemoQuery(window.location.search);
@@ -98,6 +101,7 @@ function main(): void {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    composer.setSize(window.innerWidth, window.innerHeight);
   });
 
   // Sliding 1 s FPS average.
@@ -113,7 +117,8 @@ function main(): void {
     if (stamps.length !== shownFps) { shownFps = stamps.length; fpsEl.textContent = `${shownFps} FPS`; }
     handle?.update(dt);
     controls.update();
-    renderer.render(scene, camera);
+    if (useBloom) composer.render();
+    else renderer.render(scene, camera);
   }
   requestAnimationFrame(frame);
 }

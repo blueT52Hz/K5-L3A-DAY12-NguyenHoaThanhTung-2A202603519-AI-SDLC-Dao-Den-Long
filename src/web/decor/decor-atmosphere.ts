@@ -2,6 +2,9 @@ import * as THREE from 'three';
 import type { NightConfig } from '../../core/nights';
 import { DECOR_PALETTE as P } from './decor-palette';
 import { mulberry32 } from './seeded-random';
+import { buildCloudSea } from './decor-cloud-sea';
+import { buildFireflies } from './decor-fireflies';
+import { MOON_POS, buildSkyMoonAndStars } from './decor-sky-moon-and-stars';
 
 /** Ambient light level: 0.15 base up to 0.70 when all lanterns are lit. */
 export function ambientIntensityFor(lit: number, total: number): number {
@@ -12,9 +15,6 @@ export function ambientIntensityFor(lit: number, total: number): number {
 
 const MIST_COUNT = 6;
 const MIST_SPEED = 0.03; // rad/s
-const STAR_RADIUS_M = 250; // inside the camera far plane (game 300, demo 400)
-const MOON_POS: [number, number, number] = [-110, 85, -200];
-
 // Soft radial falloff for mist discs; ShaderMaterial so it builds without a DOM canvas.
 const MIST_VERT = 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }';
 const MIST_FRAG = 'uniform vec3 uColor; uniform float uAlpha; varying vec2 vUv; void main(){ float d = distance(vUv, vec2(0.5)) * 2.0; float a = 1.0 - smoothstep(0.0, 1.0, d); gl_FragColor = vec4(uColor, a * a * uAlpha); }';
@@ -25,40 +25,17 @@ export interface AtmosphereHandle {
   update(dtS: number): void;
 }
 
-function buildStars(count: number): THREE.Points {
-  const rnd = mulberry32(9001);
-  const pos = new Float32Array(count * 3);
-  for (let i = 0; i < count; i++) {
-    // Upper hemisphere, far away (fog disabled on the material).
-    const u = rnd() * Math.PI * 2;
-    const v = 0.08 + rnd() * 0.92;
-    const r = STAR_RADIUS_M;
-    const s = Math.sqrt(1 - v * v);
-    pos[i * 3] = Math.cos(u) * s * r;
-    pos[i * 3 + 1] = v * r;
-    pos[i * 3 + 2] = Math.sin(u) * s * r;
-  }
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  const mat = new THREE.PointsMaterial({ color: 0xffffff, size: 3, sizeAttenuation: false, fog: false });
-  return new THREE.Points(geo, mat);
-}
-
-/** Sky background, fog, stars, moon, drifting mist planes and lights. */
+/** Sky background, fog, stars, moon, cloud sea, fireflies, drifting mist planes and lights. */
 export function buildAtmosphereLayer(scene: THREE.Scene, cfg: NightConfig, lowQuality: boolean): AtmosphereHandle {
   scene.background = new THREE.Color(P.sky);
-  scene.fog = new THREE.Fog(0x0e1430, 60, 190);
+  scene.fog = new THREE.Fog(0x1e2350, 70, 210); // matches the sky-dome horizon band
 
   const group = new THREE.Group();
   group.name = 'atmosphere';
-  group.add(buildStars(lowQuality ? 150 : 450));
-
-  const moon = new THREE.Mesh(
-    new THREE.SphereGeometry(14, 20, 14),
-    new THREE.MeshBasicMaterial({ color: 0xfff4d6, fog: false }),
-  );
-  moon.position.set(...MOON_POS);
-  group.add(moon);
+  const sky = buildSkyMoonAndStars(lowQuality);
+  const clouds = buildCloudSea(lowQuality);
+  const fireflies = buildFireflies(lowQuality);
+  group.add(sky.group, clouds.mesh, fireflies.points);
 
   // Mist: soft horizontal discs drifting below the island rim on slowly rotating pivots.
   const mistGeo = new THREE.PlaneGeometry(40, 40);
@@ -92,8 +69,12 @@ export function buildAtmosphereLayer(scene: THREE.Scene, cfg: NightConfig, lowQu
     group,
     setLitRatio(r: number) {
       ambient.intensity = ambientIntensityFor(r, 1) * Math.PI;
+      fireflies.setLitRatio(r);
     },
     update(dtS: number) {
+      sky.update(dtS);
+      clouds.update(dtS);
+      fireflies.update(dtS);
       for (let i = 0; i < pivots.length; i++) pivots[i].rotation.y += MIST_SPEED * dtS * (i % 2 ? 1 : -0.7);
     },
   };
