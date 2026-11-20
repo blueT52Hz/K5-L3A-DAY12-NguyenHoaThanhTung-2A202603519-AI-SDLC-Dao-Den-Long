@@ -1,47 +1,72 @@
 import './hud.css';
+import * as THREE from 'three';
 import type { GameState } from '../core/types';
 import { TUNING } from '../core/tuning';
+import { TICK_RATE } from '../core/constants';
+import { HUD_MARKUP, cooldownFraction, formatClock, interactPrompt, isClockDanger } from './hud/hud-layout';
+import { edgeArrow, nearestUnlitLantern } from './hud/lantern-pointer';
 
-const TOTAL_LANTERNS = TUNING.lantern_count_night1;
-const CARRY_MAX = TUNING.carry_capacity;
-const LOSS_REASON_DAWN = 'trời đã sáng';
-const LOSS_REASON_HP = 'hết máu';
-
-let els: Record<string, HTMLElement>;
+let els: Record<string, HTMLElement> = {};
+let maxFlames = 3;
+let root: HTMLElement;
 
 /** Write textContent only when changed (avoids per-frame DOM churn). */
 function setText(el: HTMLElement, text: string): void {
   if (el.textContent !== text) el.textContent = text;
 }
 
-export function initHud(root: HTMLElement, onRestart: () => void): void {
-  root.innerHTML = `
-    <div class="bar">
-      <div class="chip" data-k="hp"></div><div class="chip" data-k="mote"></div>
-      <div class="chip" data-k="lantern"></div><div class="chip" data-k="time"></div>
-      <div class="chip" data-k="score"></div>
-    </div>
-    <div class="hint">WASD đi - Space nhảy - E nạp đèn - F tỏa sáng - kéo chuột hoặc phím mũi tên xoay camera - P/Esc tạm dừng</div>
-    <div class="overlay" data-k="over"><h1 data-k="title"></h1><div class="final" data-k="final"></div>
-      <button data-k="btn">Chơi lại (R)</button></div>`;
+/** Mount the HUD; `onPauseClick` is wired to the top-right pause button. */
+export function initHud(hudRoot: HTMLElement, onPauseClick: () => void): void {
+  root = hudRoot;
+  root.insertAdjacentHTML('afterbegin', `<div class="hud-game" data-k="game">${HUD_MARKUP}</div>`);
   els = {};
   root.querySelectorAll<HTMLElement>('[data-k]').forEach((e) => { els[e.dataset.k!] = e; });
-  els.btn.addEventListener('click', onRestart);
+  els.motes.innerHTML = '<i></i>'.repeat(TUNING.carry_capacity);
+  els.pausebtn.addEventListener('click', onPauseClick);
 }
 
-export function updateHud(s: GameState): void {
-  const secs = Math.max(0, Math.ceil(s.timeLeftS));
+export function setHudVisible(v: boolean): void {
+  els.game.style.display = v ? '' : 'none';
+}
+
+export function resetHud(s: GameState): void {
+  maxFlames = Math.max(s.player.flames, 1);
+}
+
+export function updateHud(s: GameState, camera: THREE.Camera): void {
+  const p = s.player;
+  maxFlames = Math.max(maxFlames, p.flames);
+  setText(els.flames, '🔥'.repeat(Math.max(0, p.flames)) + '·'.repeat(maxFlames - Math.max(0, p.flames)));
+  setText(els.clock, formatClock(s.timeLeftS));
+  els.clock.classList.toggle('danger', isClockDanger(s.timeLeftS));
   const lit = s.lanterns.filter((l) => l.lit).length;
-  setText(els.hp, `Máu ${'🏮'.repeat(Math.max(0, s.player.flames))}`);
-  setText(els.mote, `Đom đóm ${s.player.carried}/${CARRY_MAX}`);
-  setText(els.lantern, `Đèn ${lit}/${TOTAL_LANTERNS}`);
-  setText(els.time, `Thời gian ${String(Math.floor(secs / 60)).padStart(2, '0')}:${String(secs % 60).padStart(2, '0')}`);
+  setText(els.lanterns, `Đèn ${lit}/${s.lanterns.length}`);
   setText(els.score, `Điểm ${s.score}`);
-  const over = s.status !== 'playing';
-  els.over.classList.toggle('show', over);
-  if (over) {
-    const reason = s.player.flames <= 0 ? LOSS_REASON_HP : LOSS_REASON_DAWN;
-    setText(els.title, s.status === 'won' ? 'Thắng!' : `Thua - ${reason}`);
-    setText(els.final, `Điểm: ${s.score}`);
+  const slots = els.motes.children;
+  for (let i = 0; i < slots.length; i++) slots[i].classList.toggle('on', i < p.carried);
+
+  setCooldown(els.dash, cooldownFraction(p.dashCooldownTicks, TUNING.dash_cooldown_s));
+  setCooldown(els.pulse, cooldownFraction(p.pulseCooldownTicks, TUNING.pulse_cooldown_s));
+
+  const near = nearestUnlitLantern(s.lanterns, p.pos);
+  const inRange = near !== null && Math.hypot(near.pos[0] - p.pos[0], near.pos[2] - p.pos[2]) <= TUNING.interact_radius;
+  setText(els.prompt, inRange ? interactPrompt(p.carried) : '');
+  els.prompt.style.display = inRange ? '' : 'none';
+
+  const arrow = near ? edgeArrow(camera, near.pos, window.innerWidth, window.innerHeight) : null;
+  els.arrow.style.display = arrow?.visible ? '' : 'none';
+  if (arrow?.visible) {
+    els.arrow.style.transform = `translate(${arrow.x}px, ${arrow.y}px) rotate(${-arrow.angleRad}rad)`;
   }
+
+  const status: string[] = [];
+  if (p.charmTicks > 0) status.push(`Bùa Gió ${Math.ceil(p.charmTicks / TICK_RATE)}s`);
+  if (s.wind.active) status.push('Gió đang thổi!');
+  else if (s.wind.warning) status.push('Cảnh báo: gió sắp nổi');
+  setText(els.status, status.join(' - '));
+}
+
+function setCooldown(el: HTMLElement, frac: number): void {
+  el.style.setProperty('--cd', `${(frac * 360).toFixed(0)}deg`);
+  el.classList.toggle('ready', frac <= 0);
 }
