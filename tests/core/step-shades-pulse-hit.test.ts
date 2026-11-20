@@ -33,6 +33,20 @@ describe('pulse (spec 6.5)', () => {
       expect(s.score).toBe(0);
     }
   });
+  it('needs a mote', () => {
+    const s = bare({ shades: [{ pos: [5, 0, 0] }] });
+    expect(run(s, { pulse: true }, 1)).toEqual([]);
+  });
+  it('held pulse fires once; cooldown 180 ticks', () => {
+    const s = bare({ player: { carried: 5 }, shades: [{ pos: [50, 0, 0] }] });
+    const ev = run(s, (k) => ({ pulse: k === 0 || k === 179 }), 180); // up at 0, edge at 179
+    expect(ev.filter((e) => e.name === 'pulse')).toHaveLength(1);
+    const t = bare({ player: { carried: 6 }, shades: [{ pos: [50, 0, 0] }] });
+    const ev2 = run(t, (k) => ({ pulse: k === 0 || k === 180 }), 181);
+    expect(ev2.filter((e) => e.name === 'pulse').map((e) => e.tick)).toEqual([1, 181]);
+    const u = bare({ player: { carried: 5 }, shades: [{ pos: [50, 0, 0] }] });
+    expect(run(u, { pulse: true }, 300).filter((e) => e.name === 'pulse')).toHaveLength(1);
+  });
   it('same XZ pushes +X', () => {
     const s = bare({ player: { carried: 3 }, shades: [{ pos: [0, 0, 0] }] });
     run(s, { pulse: true }, 15);
