@@ -36,6 +36,11 @@ export function buildIslandDecor(
     terrain, props: props.group, atmosphere: atmosphere.group, glow: glow.group,
   };
   const all = Object.values(layers);
+  if (low) { // CPU / low-quality mode: no PointLights at all (dock / bridge warm lights)
+    const pointLights: THREE.PointLight[] = [];
+    for (const obj of all) obj.traverse((o) => { if ((o as THREE.PointLight).isPointLight) pointLights.push(o as THREE.PointLight); });
+    for (const l of pointLights) { l.removeFromParent(); l.dispose(); }
+  }
   scene.add(...all);
   const knownIds = new Set(cfg.lanterns.map((l) => l.id));
 

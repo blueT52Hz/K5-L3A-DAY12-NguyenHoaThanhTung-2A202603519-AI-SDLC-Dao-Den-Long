@@ -34,10 +34,10 @@ describe('decor atmosphere, glow, terrain', () => {
     expect(g.isLitNear(0, 25)).toBe(false);
     expect(g.isLitNear(23.8, 7.7)).toBe(true);
   });
-  it('terrain Dem 1 co mesh, Dem 2/3 rong', () => {
+  it('terrain co mesh cho ca 3 dem', () => {
     expect(buildTerrainLayer(getNight(1)).children.length).toBeGreaterThan(0);
-    expect(buildTerrainLayer(getNight(3)).children.length).toBe(0);
-    expect(buildTerrainLayer(getNight(2)).children.length).toBe(0);
+    expect(buildTerrainLayer(getNight(3)).children.length).toBeGreaterThan(0);
+    expect(buildTerrainLayer(getNight(2)).children.length).toBeGreaterThan(0);
   });
   it('atmosphere dat background + fog, khong can renderer', () => {
     const scene = new THREE.Scene();
