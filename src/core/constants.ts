@@ -34,6 +34,8 @@ export const SHADE_WANDER_FACTOR = 0.5;
 export const HEADING_CHANGE_TICKS = 120;
 export const RECOIL_TICKS = 60;
 export const RECOIL_DIST = 2;
+/** Recoil walks on RECOIL_TICKS - 1 ticks: the hit tick (step 9) is after movement and the last tick ends at step 2. */
+export const RECOIL_MOVE_TICKS = RECOIL_TICKS - 1;
 export const EVICT_MAX_TICKS = 30;
 
 // Wind charm

@@ -30,17 +30,20 @@ export function burnAndDrainFuel(s: GameState, events: GameEvent[]): void {
     if (l.lit) l.fuelUnits -= decayPerTick;
   }
 
+  const reporting: { lantern: Lantern; shadeId: string }[] = [];
   for (const sh of [...s.shades].sort(compareShadeIds)) {
     if (sh.state !== 'drain' || sh.targetLanternId === null) continue;
     const l = s.lanterns.find((x) => x.id === sh.targetLanternId);
     if (!l || !l.lit) continue;
     l.fuelUnits -= drainPerTick;
     sh.drainTicks += 1;
-    if (sh.drainTicks % FUEL_DRAIN_EVENT_TICKS === 0) {
-      // Clamp before reporting: fuel may be negative until the lantern-out pass below.
-      const fuel = Math.round(Math.max(0, l.fuelUnits) / 6) / 10;
-      events.push({ tick: s.tick, name: 'fuel_drain', data: { lantern_id: l.id, shade_id: sh.id, fuel } });
-    }
+    if (sh.drainTicks % FUEL_DRAIN_EVENT_TICKS === 0) reporting.push({ lantern: l, shadeId: sh.id });
+  }
+
+  // Report after all decay + drain: every shade on one lantern sees the same post-tick fuel (clamped >= 0, before lantern_out).
+  for (const { lantern, shadeId } of reporting) {
+    const fuel = Math.round(Math.max(0, lantern.fuelUnits) / 6) / 10;
+    events.push({ tick: s.tick, name: 'fuel_drain', data: { lantern_id: lantern.id, shade_id: shadeId, fuel } });
   }
 
   for (const l of s.lanterns) {

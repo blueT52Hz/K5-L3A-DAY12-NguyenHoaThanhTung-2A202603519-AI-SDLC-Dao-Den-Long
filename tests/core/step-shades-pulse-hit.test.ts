@@ -58,7 +58,9 @@ describe('pulse (spec 6.5)', () => {
     run(s, { pulse: true }, 1);
     run(s, {}, 119); // tick 120
     expect(s.shades[0].state).toBe('stunned');
-    run(s, {}, 1); // tick 121
+    run(s, {}, 1); // tick 121: stun ended -> wander, no detection on that same tick (Phase 3)
+    expect(s.shades[0].state).toBe('wander');
+    run(s, {}, 1); // tick 122: detection resumes
     expect(s.shades[0].state).toBe('chase');
   });
   it('pulse on a stunned shade refreshes stun (120) and push (15)', () => {
@@ -125,7 +127,7 @@ describe('hit (spec 6.6)', () => {
     const d0 = distXZ(s.shades[0].pos, s.player.pos);
     run(s, {}, 59); // tick 60: last recoil tick
     expect(s.shades[0].state).toBe('recoil');
-    expect(Math.abs(distXZ(s.shades[0].pos, s.player.pos) - d0 - 2)).toBeLessThanOrEqual(0.05);
+    expect(Math.abs(distXZ(s.shades[0].pos, s.player.pos) - d0 - 2)).toBeLessThanOrEqual(1e-6);
     run(s, {}, 1);
     expect(s.shades[0].state).toBe('chase');
     const ev2 = run(s, {}, 60).filter((e) => e.name === 'player_hit');

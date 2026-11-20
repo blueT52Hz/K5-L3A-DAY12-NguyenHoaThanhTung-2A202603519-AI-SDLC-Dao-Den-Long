@@ -55,6 +55,7 @@ export function drainStep(s: GameState, sh: Shade): boolean {
   const l = s.lanterns.find((x) => x.id === sh.targetLanternId);
   if (!l || !isLowFuel(l) || distXZ(sh.pos, l.pos) > DRAIN_RANGE_M) {
     sh.state = 'wander';
+    sh.noDetectTick = s.tick; // stays wander this tick (no detection in the same step)
     clearDrain(sh);
     return true;
   }

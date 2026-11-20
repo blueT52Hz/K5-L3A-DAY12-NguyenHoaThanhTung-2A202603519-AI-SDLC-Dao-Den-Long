@@ -3,7 +3,7 @@ import type { GameState } from '../core/types';
 import { getNight } from '../core/nights';
 import {
   createDrifterModel, createJumpPadModel, createLanternModel, createMoteModel,
-  createShadeModel, createWindCharmModel, createWindLeaves, setShadeColorblind,
+  createShadeModel, createWindCharmModel, createWindLeaves, setShadeColorblind, setShadeStunned,
 } from './models';
 import { isColorblind } from './colorblind-mode';
 import { TICK_RATE } from '../core/constants';
@@ -94,13 +94,14 @@ export class SceneSync {
     this.syncById(this.motes, state.motes, createMoteModel);
     for (const m of state.motes) this.motes.get(m.id)!.position.set(...m.pos);
 
-    this.syncById(this.shades, state.shades, () => cloneMaterials(createShadeModel()));
+    this.syncById(this.shades, state.shades, createShadeModel);
     for (const s of state.shades) {
       const obj = this.shades.get(s.id)!;
       setShadeColorblind(obj, isColorblind());
       const stunned = s.state === 'stunned';
       const shake = stunned ? Math.sin(state.tick * 1.7) * 0.15 : 0;
       obj.position.set(s.pos[0] + shake, s.pos[1], s.pos[2]);
+      setShadeStunned(obj, stunned);
       setOpacity(obj, stunned ? 0.4 : 1);
       if (!stunned) { // eyes (+Z) turn toward the player, smoothed on the shortest arc
         const target = Math.atan2(state.player.pos[0] - s.pos[0], state.player.pos[2] - s.pos[2]);
@@ -164,16 +165,6 @@ function forEachMaterial(obj: THREE.Object3D, fn: (m: THREE.Material) => void): 
     if (!mat) return;
     (Array.isArray(mat) ? mat : [mat]).forEach(fn);
   });
-}
-
-/** Give each shade its own materials so stun fading does not affect others. */
-function cloneMaterials(obj: THREE.Object3D): THREE.Object3D {
-  obj.traverse((c) => {
-    const m = c as THREE.Mesh;
-    if (!m.material) return;
-    m.material = Array.isArray(m.material) ? m.material.map((x) => x.clone()) : m.material.clone();
-  });
-  return obj;
 }
 
 function setOpacity(obj: THREE.Object3D, opacity: number): void {

@@ -35,13 +35,15 @@ export function depositToLantern(s: GameState, events: GameEvent[]): void {
     return;
   }
 
-  const need = (best.everLit ? TUNING.relight_cost : TUNING.lantern_cost) - best.deposited;
+  // need is clamped at 0: a lantern already holding >= cost (scenario) lights at once, depositing nothing.
+  const need = Math.max(0, (best.everLit ? TUNING.relight_cost : TUNING.lantern_cost) - best.deposited);
   const amount = Math.min(p.carried, need);
-  if (amount <= 0) return;
-  p.carried -= amount;
-  best.deposited += amount;
-  s.score += TUNING.score.per_mote * amount;
-  events.push({ tick: s.tick, name: 'deposit', data: { lantern_id: best.id, amount, deposited: best.deposited } });
+  if (amount > 0) {
+    p.carried -= amount;
+    best.deposited += amount;
+    s.score += TUNING.score.per_mote * amount;
+    events.push({ tick: s.tick, name: 'deposit', data: { lantern_id: best.id, amount, deposited: best.deposited } });
+  }
   if (amount >= need) {
     const relight = best.everLit;
     best.lit = true;

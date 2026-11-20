@@ -10,7 +10,7 @@ try { ({ chromium } = require('playwright')); } catch { ({ chromium } = require(
 
 const BASE = (process.env.GAME_URL || 'http://localhost:4173/').replace(/\/$/, '');
 const SECONDS = Number(process.env.FPS_SECONDS || 15);
-const OUT = 'evidence/phase-2';
+const OUT = process.env.EVIDENCE_DIR || 'evidence/phase-2';
 mkdirSync(`${OUT}/screenshots`, { recursive: true });
 
 const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });

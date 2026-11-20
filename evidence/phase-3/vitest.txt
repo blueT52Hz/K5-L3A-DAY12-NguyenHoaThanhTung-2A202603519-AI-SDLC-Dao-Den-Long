@@ -3,8 +3,8 @@ exit 0
  RUN  v5.1.1 D:/VinAI/Day12/K5-L3A-DAY12-NguyenHoaThanhTung-2A202603519-AI-SDLC-Dao-Den-Long
 
 
- Test Files  16 passed (16)
-      Tests  149 passed (149)
-   Start at  17:03:53
-   Duration  862ms (transform 35%, import 32%, tests 28%, worker 5%)
+ Test Files  25 passed (25)
+      Tests  178 passed (178)
+   Start at  17:50:33
+   Duration  1.82s (import 39%, tests 29%, transform 26%, worker 6%)
 

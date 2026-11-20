@@ -20,8 +20,14 @@ Playtest cho thấy người chơi giỏi thắp đủ đèn trong khoảng 2 ph
 4. **Bóng Mực `drain`:** `wander` mà có đèn sáng dầu < 30 thì đi tới đèn gần nhất (hòa: id nhỏ), không rút RNG; cách <= 2 m vào `drain`, đứng yên hút dầu, event `fuel_drain` mỗi 60 tick. Ra khỏi `drain`: May <= 6 m thì `chase`; đèn tắt, dầu >= 30 hoặc xa > 2 m thì `wander`. Hết choáng luôn về `wander`.
 5. **Sức chứa đom đóm tăng theo đèn:** `min(capacity_max 20, carry_capacity 10 + 2 x lần thắp thành công)`, đặt lại mỗi Đêm.
 6. **Luật thắng bình minh** (bước 11): hết Ngọn Lửa luôn thua (`no_flames`). Khi `time_left_s <= 0`: số đèn sáng >= ceil(0.6 x tổng) thì thắng `dawn_survived`, cộng mỗi đèn sáng (50 + phần nguyên dầu) và 50 x Ngọn Lửa; ngược lại thua `dawn`. Thắp đủ đèn không còn kết thúc ván; bỏ `all_lit` và thưởng giây còn lại.
-7. **Điểm mới (quyết định của người viết, đề không nêu):** 5/đom đóm, 100/đèn lần đầu, 40/thắp lại, 5/choáng, 15/choáng Bóng Mực đang `drain`.
+7. **Điểm mới:** ticket mục 5 định nghĩa đầy đủ công thức (5/đom đóm nạp vào đèn, 100/thắp lần đầu, 40/thắp lại, 5/Bóng Mực trúng Tỏa Sáng và 15 nếu nó đang `drain`, thưởng bình minh 50 + floor(dầu) mỗi đèn sáng và 50 mỗi Ngọn Lửa, bỏ thưởng thời gian); code chỉ cài đúng theo ticket, không có quyết định riêng.
 8. **Tất định:** dầu số nguyên; hút dầu không rút RNG; thứ tự rút RNG của Phase 2 giữ nguyên khi không có đèn yếu.
+
+9. **Không có đèn yếu thì giữ Phase 2:** "như trước" trong ticket hiểu là hành vi trước đó: Bóng Mực `wander` đi theo hướng ngẫu nhiên (rút RNG như Phase 2). Phase 2 chưa từng định nghĩa việc đi tới đèn chưa sáng, nên không thêm hành vi đó.
+10. **Hồi (recoil) đủ 2 m:** bước lùi = `RECOIL_DIST / (RECOIL_TICKS - 1)`. Cú hit xảy ra ở bước 9 (sau di chuyển) và tick cuối đã hết recoil ở bước 2, nên chỉ có 59 lần di chuyển; chia theo 59 để tổng đúng 2 m trong 60 tick, không đổi độ dài trạng thái (ngữ nghĩa bộ đếm của SKILL giữ nguyên).
+11. **Hết choáng / rời `drain` giữ `wander` trong tick đó:** Bóng Mực có `noDetectTick` (nội bộ, không ra snapshot); bước 8 bỏ nhánh `wander -> chase` khi tick trùng. Hết recoil giữ luật Phase 2 (chase nếu May <= 18 m).
+12. **Sự kiện `fuel_drain` cùng tick:** trừ hết decay + hút của mọi Bóng Mực trước, rồi mới phát event với dầu sau tick (kẹp >= 0), vẫn trước lượt `lantern_out`; nhiều Bóng Mực trên một đèn báo cùng giá trị.
+13. **Đèn đã có `deposited >= cost` (scenario):** cần = max(0, cost - deposited); thắp ngay khi tương tác, không nạp thêm, không có số âm.
 
 ## Phương án đã bỏ
 

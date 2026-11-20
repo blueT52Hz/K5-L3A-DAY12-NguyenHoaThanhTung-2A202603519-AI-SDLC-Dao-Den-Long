@@ -46,7 +46,7 @@ export function updateHud(s: GameState, camera: THREE.Camera): void {
   els.clock.classList.toggle('danger', danger);
   const lit = s.lanterns.filter((l) => l.lit).length;
   const need = Math.ceil(TUNING.win_ratio * s.lanterns.length);
-  setText(els.lanterns, `Đèn sáng ${lit}/${need}`);
+  setText(els.lanterns, `Đèn sáng ${lit}/${s.lanterns.length} (cần ${need})`);
   const low = s.lanterns.some(isLowFuel);
   setText(els.warn, low ? warnText('Đèn sắp cạn dầu!') : '');
   setText(els.score, `Điểm ${s.score}`);

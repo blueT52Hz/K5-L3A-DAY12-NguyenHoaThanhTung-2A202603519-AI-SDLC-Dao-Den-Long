@@ -6,9 +6,10 @@ export function createShadeModel(): THREE.Group {
   const g = new THREE.Group();
   const blob = new THREE.Mesh(
     new THREE.SphereGeometry(0.7, 14, 12),
-    new THREE.MeshStandardMaterial({ color: 0x120a1a, roughness: 0.9, emissive: 0x4a1a80, emissiveIntensity: 0.3 }),
+    new THREE.MeshStandardMaterial({ color: PALETTE.shadeBody, roughness: 0.9, emissive: 0x4a1a80, emissiveIntensity: 0.3 }),
   );
   blob.scale.set(1.15, 0.85, 1.0);
+  g.userData.bodyMat = blob.material;
   // faint purple rim ring so the danger reads against the green ground
   const rim = new THREE.Mesh(new THREE.TorusGeometry(0.85, 0.05, 6, 24),
     new THREE.MeshStandardMaterial({ color: 0x7a3cff, emissive: 0x7a3cff, emissiveIntensity: 0.7 }));
@@ -32,4 +33,10 @@ export function setShadeColorblind(g: THREE.Object3D, cb: boolean): void {
   const eye = g.userData.eyeMat as THREE.MeshStandardMaterial | undefined;
   if (rim) { const c = cb ? PALETTE.shadeRimColorblind : PALETTE.shadeRim; rim.color.setHex(c); rim.emissive.setHex(c); }
   if (eye) { const c = cb ? PALETTE.shadeRimColorblind : PALETTE.shadeRim; eye.color.setHex(c); eye.emissive.setHex(c); }
+}
+
+/** Stunned body color #3A3450 (default body #120A1A). */
+export function setShadeStunned(g: THREE.Object3D, stunned: boolean): void {
+  const body = g.userData.bodyMat as THREE.MeshStandardMaterial | undefined;
+  body?.color.setHex(stunned ? PALETTE.shadeStunned : PALETTE.shadeBody);
 }

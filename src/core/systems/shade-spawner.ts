@@ -8,7 +8,7 @@ import { hasSafeZone } from './lantern-fuel';
 
 /** A fresh shade record (no push, heading, or eviction pending). */
 export function createShade(id: string, pos: Vec3, state: Shade['state'], stateTicks: number): Shade {
-  return { id, pos, state, stateTicks, pushTicks: 0, pushDir: [0, 0], heading: [0, 0], headingTicks: 0, evictTicks: 0, evictFrom: null, targetLanternId: null, drainTicks: 0 };
+  return { id, pos, state, stateTicks, pushTicks: 0, pushDir: [0, 0], heading: [0, 0], headingTicks: 0, evictTicks: 0, evictFrom: null, targetLanternId: null, drainTicks: 0, noDetectTick: -1 };
 }
 
 /** How many shades the schedule wants at this simTick: 2 at 300, then 1 at 300 + interval * k (spec 6.6). */

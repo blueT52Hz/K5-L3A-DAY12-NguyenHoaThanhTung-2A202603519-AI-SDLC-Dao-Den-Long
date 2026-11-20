@@ -1,5 +1,5 @@
 import {
-  HEADING_CHANGE_TICKS, PULSE_PUSH_TICKS, RECOIL_DIST, RECOIL_TICKS, SHADE_DETECT, SHADE_GIVE_UP, SHADE_WANDER_FACTOR, TICK_RATE,
+  HEADING_CHANGE_TICKS, PULSE_PUSH_TICKS, RECOIL_DIST, RECOIL_MOVE_TICKS, RECOIL_TICKS, SHADE_DETECT, SHADE_GIVE_UP, SHADE_WANDER_FACTOR, TICK_RATE,
 } from '../constants';
 import { distXZ } from '../math-xz';
 import { getNight } from '../nights';
@@ -13,12 +13,12 @@ import { evictStep, keepOutOfSafeZones } from './shade-zones';
 
 /**
  * Tick step 2, after the counters were decremented: a timed state whose counter reached 0 ends.
- * spawning -> wander; stunned -> always wander (Phase 3); recoil -> chase if XZ to May <= SHADE_GIVE_UP, else wander.
+ * spawning -> wander; stunned -> always wander and no wander->chase detection on that same tick (Phase 3); recoil -> chase if XZ to May <= SHADE_GIVE_UP, else wander.
  */
 export function endTimedShadeState(s: GameState, sh: Shade): void {
   if (sh.stateTicks > 0) return;
   if (sh.state === 'spawning') sh.state = 'wander';
-  else if (sh.state === 'stunned') sh.state = 'wander';
+  else if (sh.state === 'stunned') { sh.state = 'wander'; sh.noDetectTick = s.tick; }
   else if (sh.state === 'recoil') {
     sh.state = distXZ(sh.pos, s.player.pos) <= SHADE_GIVE_UP ? 'chase' : 'wander';
   }
@@ -38,7 +38,7 @@ function pushStep(cfg: NightConfig, sh: Shade): void {
 function wanderOrChase(s: GameState, cfg: NightConfig, sh: Shade): void {
   const p = s.player.pos;
   const d = distXZ(sh.pos, p);
-  if (sh.state === 'wander' && d <= SHADE_DETECT) sh.state = 'chase';
+  if (sh.state === 'wander' && d <= SHADE_DETECT && sh.noDetectTick !== s.tick) sh.state = 'chase';
   else if (sh.state === 'chase' && d > SHADE_GIVE_UP) sh.state = 'wander';
   const speed = cfg.shadeSpeed / TICK_RATE;
   if (sh.state === 'chase') {
@@ -75,7 +75,7 @@ export function moveShades(s: GameState): void {
     else if (sh.state === 'drain') { if (drainStep(s, sh)) wanderOrChase(s, cfg, sh); }
     else if (sh.state === 'wander' || sh.state === 'chase') wanderOrChase(s, cfg, sh);
     else if (sh.state === 'recoil') {
-      const r = RECOIL_DIST / RECOIL_TICKS;
+      const r = RECOIL_DIST / RECOIL_MOVE_TICKS;
       walkShade(cfg, sh, sh.pushDir[0] * r, sh.pushDir[1] * r);
     }
     settleShadeY(cfg, sh);

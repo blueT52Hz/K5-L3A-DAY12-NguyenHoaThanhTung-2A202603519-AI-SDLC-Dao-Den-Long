@@ -19,7 +19,9 @@ export interface Player { pos: Vec3; vel: Vec3; vy: number; grounded: boolean; f
 export interface Mote { id: string; pos: Vec3; kind: 'random' | 'dropped'; ttlTicks: number | null }
 export interface Shade { id: string; pos: Vec3; state: ShadeState; stateTicks: number; pushTicks: number; pushDir: XZ;
   heading: XZ; headingTicks: number; evictTicks: number; evictFrom: XZ | null;
-  targetLanternId: string | null; drainTicks: number }
+  targetLanternId: string | null; drainTicks: number;
+  /** Tick on which the shade left stunned/drain for wander: no wander->chase detection that tick (internal, not in snapshot). */
+  noDetectTick: number }
 export interface Drifter { id: string; pos: Vec3; state: DrifterState; stolen: number; stateTicks: number; heading: XZ; headingTicks: number }
 export interface Charm { id: string; pos: Vec3; available: boolean; respawnTicks: number }
 export interface WindState { warning: boolean; active: boolean; dirDeg: number }

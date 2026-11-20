@@ -32,5 +32,15 @@
 ### Sửa lỗi không liên quan Phase 3
 - `tests/core/step-dash-wind-charm.test.ts` "wind_enabled false never blows; N1/N2 no wind and no rng use": đã đỏ từ trước Phase 3 (kiểm trên HEAD). Đêm 2 sinh Gió Lạc ở tick 1200 và rút RNG theo thiết kế Phase 2; test chưa tắt `random_drifters`. Sửa test (thêm `random_drifters: false`), code không đổi.
 
+### Sửa theo audit (cùng commit Phase 3)
+- Recoil sau hit đi đủ 2 m trong 60 tick (`RECOIL_MOVE_TICKS`; trước đó 59 bước = 1.967 m). Đổi output so với evidence Phase 2: vị trí Bóng Mực sau hit lệch tối đa 0.033 m.
+- Hết choáng hoặc rời `drain` về `wander`: tick đó không xét `wander -> chase` (`noDetectTick`). Đổi output so với Phase 2: Bóng Mực hết choáng gần May vào `chase` chậm 1 tick.
+- Đèn có `deposited >= cost` (scenario) sáng ngay khi tương tác, không nạp số âm.
+- `fuel_drain` nhiều Bóng Mực cùng đèn cùng tick báo cùng giá trị dầu sau tick (kẹp >= 0).
+- HUD: `Đèn sáng k/tổng (cần n)`; màu thân Bóng Mực choáng `#3A3450` được dùng thật (sửa luôn lỗi vật liệu nhân bản làm đổi màu mù màu không tác dụng); chữ HUD/panel `#F5F1E6`.
+- Evidence Phase 2 và 3 sinh lại (output đổi do recoil/choáng); thêm ảnh chụp, `fps.txt`, `README.md` ở `evidence/phase-3/`.
+- Test: `tests/core/step-shades-pulse-hit.test.ts` (stunned ends at k+120: `wander`, chase từ k+122; recoil chính xác 2 m); thêm `tests/core/phase3-audit-fixes.test.ts`.
+- ADR 0001: sửa mục 7, thêm mục 9-13.
+
 ### Evidence
 - `evidence/phase-3/` sinh bằng `scripts/generate-evidence-phase-3.mjs`: `fuel-out`, `refuel`, `relight`, `drain`, `win-dawn`, `lose-dawn`, determinism 3 Đêm, `headless-timing.txt`, `vitest.txt`.

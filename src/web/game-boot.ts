@@ -1,3 +1,4 @@
+import { devScenarioFromUrl } from './dev-fuel-demo-scenario';
 import * as THREE from 'three';
 import { createGame } from '../core/create-game';
 import { step } from '../core/step';
@@ -53,7 +54,7 @@ export function bootGame(startNight?: NightId): void {
 
   /** Fresh night: new core state (web shell may use Date for the seed). */
   function loadNight(night: NightId): void {
-    state = createGame(Date.now() % 2147483647, {}, night);
+    state = createGame(Date.now() % 2147483647, devScenarioFromUrl(window.location.search, night) ?? {}, night);
     sync.reset(state);
     resetHud(state);
     clearInput();

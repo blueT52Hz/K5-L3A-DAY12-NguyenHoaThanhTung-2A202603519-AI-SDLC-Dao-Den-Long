@@ -353,7 +353,7 @@ vel = [dịch thực X × 60, vy, dịch thực Z × 60]
 - [ ] **Step 1:** Script sinh: vitest.txt, JSONL cho mỗi tính năng mới (dash, pad N2, pad N3, fall-respawn, wind, drifter steal/pulse/drop, charm, pause, shade states, safe-zone eviction, win-at-dawn-tick) bằng scenario trong `evidence/phase-2/scenarios/`, determinism cả 3 Đêm, `headless-timing.txt` (21.600 tick mỗi Đêm).
 - [ ] **Step 2:** Chạy `npm run build && node scripts/generate-evidence-phase-2.mjs` → mọi file có mặt, timing < 30 s mỗi Đêm.
 - [ ] **Step 3:** FPS: chạy `npm run preview`, dùng Playwright (đã có ở `D:\VinAI\Day12\node_modules`) mở 1280×720, đo FPS trung bình 20 s mỗi Đêm, ghi `evidence/phase-2/fps.txt` (≥ 30) và ảnh menu, 3 Đêm, HUD, tạm dừng.
-- [ ] **Step 4:** Viết skill dự án (luật contract v1.1, thứ tự tick, cách thêm scenario/evidence, lệnh kiểm tra), cập nhật README/AGENTS/CLAUDE/ai-log. Kiểm tra không có en/em dash: `grep -rn "–\|—" README.md AGENTS.md docs .claude/skills` → rỗng.
+- [ ] **Step 4:** Viết skill dự án (luật contract v1.1, thứ tự tick, cách thêm scenario/evidence, lệnh kiểm tra), cập nhật README/AGENTS/CLAUDE/ai-log. Kiểm tra không có en/em dash: `grep -rnP "\x{2013}|\x{2014}" README.md AGENTS.md docs .claude/skills` → rỗng.
 - [ ] **Step 5:** `npm test` xanh. Commit theo 2 commit riêng để lịch sử thể hiện:
 
 ```bash
