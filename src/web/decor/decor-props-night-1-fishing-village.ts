@@ -2,6 +2,10 @@ import * as THREE from 'three';
 import type { NightConfig } from '../../core/nights';
 import { DECOR_PALETTE as P } from './decor-palette';
 import { dockAnchor } from './decor-scatter-placement';
+import {
+  BOAT_SCALE, BOAT_SPOTS, DOCK_DECK_WIDTH_M, DOCK_PLANK_COUNT, DOCK_PLANK_STEP, DOCK_PLANK_Z0,
+  DOCK_POST_ROWS, DOCK_POST_X, NET_HALF_SPAN, NET_POLE_SPOTS,
+} from './decor-night-1-anchored-layout';
 
 function flat(color: number): THREE.MeshStandardMaterial {
   return new THREE.MeshStandardMaterial({ color, flatShading: true, roughness: 0.95, metalness: 0 });
@@ -33,17 +37,17 @@ export function buildNight1Props(cfg: NightConfig): THREE.Group {
   g.add(anchor);
 
   // Dock deck: planks along z with a gap, plus posts.
-  const plankGeo = new THREE.BoxGeometry(2.4, 0.12, 0.42);
-  const planks = new THREE.InstancedMesh(plankGeo, wood, 14);
-  for (let i = 0; i < 14; i++) {
-    m.makeTranslation(0, 0.25, -2 + i * 0.5);
+  const plankGeo = new THREE.BoxGeometry(DOCK_DECK_WIDTH_M, 0.14, 0.42);
+  const planks = new THREE.InstancedMesh(plankGeo, wood, DOCK_PLANK_COUNT);
+  for (let i = 0; i < DOCK_PLANK_COUNT; i++) {
+    m.makeTranslation(0, 0.25, DOCK_PLANK_Z0 + i * DOCK_PLANK_STEP);
     planks.setMatrixAt(i, m);
   }
   anchor.add(planks);
-  const postGeo = new THREE.CylinderGeometry(0.12, 0.14, 1.6, 6);
-  const posts = new THREE.InstancedMesh(postGeo, wood, 6);
-  for (let i = 0; i < 6; i++) {
-    m.makeTranslation(i % 2 ? 1.1 : -1.1, -0.45, -1.5 + Math.floor(i / 2) * 2.8);
+  const postGeo = new THREE.CylinderGeometry(0.16, 0.19, 1.8, 6);
+  const posts = new THREE.InstancedMesh(postGeo, wood, DOCK_POST_ROWS.length * 2);
+  for (let i = 0; i < DOCK_POST_ROWS.length * 2; i++) {
+    m.makeTranslation(i % 2 ? DOCK_POST_X : -DOCK_POST_X, -0.45, DOCK_POST_ROWS[Math.floor(i / 2)]);
     posts.setMatrixAt(i, m);
   }
   anchor.add(posts);
@@ -54,10 +58,9 @@ export function buildNight1Props(cfg: NightConfig): THREE.Group {
     color: 0xa87b45, flatShading: true, roughness: 1, side: THREE.DoubleSide,
   });
   const boats = new THREE.InstancedMesh(boatGeo, boatMat, 3);
-  const boatSpots: [number, number, number][] = [[-3.6, -2.5, 0.4], [3.8, -3.2, -0.6], [-5.2, -4.8, 1.1]];
-  boatSpots.forEach(([x, z, yaw], i) => {
+  BOAT_SPOTS.forEach(([x, z, yaw], i) => {
     const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
-    m.compose(new THREE.Vector3(x, 0.45, z), q, new THREE.Vector3(1.1, 0.55, 1.1));
+    m.compose(new THREE.Vector3(x, 0.6, z), q, new THREE.Vector3(BOAT_SCALE, BOAT_SCALE * 0.5, BOAT_SCALE));
     boats.setMatrixAt(i, m);
   });
   anchor.add(boats);
@@ -70,9 +73,9 @@ export function buildNight1Props(cfg: NightConfig): THREE.Group {
     color: 0xc9c4aa, transparent: true, opacity: 0.55, side: THREE.DoubleSide, roughness: 1,
   });
   const nets = new THREE.InstancedMesh(netGeo, netMat, 2);
-  [[-7, -6], [7, -7]].forEach(([x, z], k) => {
-    m.makeTranslation(x - 1.3, 1.5, z); poles.setMatrixAt(k * 2, m);
-    m.makeTranslation(x + 1.3, 1.5, z); poles.setMatrixAt(k * 2 + 1, m);
+  NET_POLE_SPOTS.forEach(([x, z], k) => {
+    m.makeTranslation(x - NET_HALF_SPAN, 1.5, z); poles.setMatrixAt(k * 2, m);
+    m.makeTranslation(x + NET_HALF_SPAN, 1.5, z); poles.setMatrixAt(k * 2 + 1, m);
     m.makeTranslation(x, 1.9, z); nets.setMatrixAt(k, m);
   });
   anchor.add(poles, nets);

@@ -3,6 +3,7 @@ import type { NightConfig } from '../../core/nights';
 import { DECOR_PALETTE as P } from './decor-palette';
 import { mulberry32 } from './seeded-random';
 import { scatterPoints } from './decor-scatter-placement';
+import { nearDockFootprint } from './decor-night-1-anchored-layout';
 
 const GRASS_COUNT = 700;
 const GRASS_LOW_FRACTION = 0.4;
@@ -30,10 +31,12 @@ export function buildSharedProps(
   const rnd = mulberry32(seed ^ 0x9e3779b1);
 
   // Grass: thin 4-sided cones, base at y=0 so they sway around their roots.
-  const grassPts = scatterPoints(cfg, {
+  // Drop points inside the dock/boats/nets footprint so nothing pokes through them.
+  const clear = (pts: ReturnType<typeof scatterPoints>) => pts.filter((p) => !nearDockFootprint(cfg, p[0], p[2]));
+  const grassPts = clear(scatterPoints(cfg, {
     seed: seed + 1, count: Math.round(GRASS_COUNT * (lowQuality ? GRASS_LOW_FRACTION : 1)),
     minRadiusFrac: 0.1, maxRadiusFrac: 0.93, minSpacing: 0.6,
-  });
+  }));
   const bladeGeo = new THREE.ConeGeometry(0.09, 0.8, 4);
   bladeGeo.translate(0, 0.4, 0);
   const grass = new THREE.InstancedMesh(bladeGeo, flat(0xffffff), Math.max(1, grassPts.length));
@@ -60,7 +63,7 @@ export function buildSharedProps(
   group.add(grass);
 
   // Rocks: low-poly dodecahedra, random squash and yaw.
-  const rockPts = scatterPoints(cfg, { seed: seed + 2, count: 26, minRadiusFrac: 0.15, maxRadiusFrac: 0.92, minSpacing: 3 });
+  const rockPts = clear(scatterPoints(cfg, { seed: seed + 2, count: 26, minRadiusFrac: 0.15, maxRadiusFrac: 0.92, minSpacing: 3 }));
   const rocks = new THREE.InstancedMesh(new THREE.DodecahedronGeometry(0.6, 0), flat(P.stone), Math.max(1, rockPts.length));
   rocks.count = rockPts.length;
   rockPts.forEach((p, i) => {
