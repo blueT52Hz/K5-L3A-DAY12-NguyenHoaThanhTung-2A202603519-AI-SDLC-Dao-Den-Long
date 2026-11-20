@@ -38,11 +38,12 @@ export function createGame(seed: number, scenario: Scenario = {}, night: NightId
       invulnTicks: 0, pulseCooldownTicks: 0, dashTicks: 0, dashCooldownTicks: 0, dashDir: [0, 0],
       charmTicks: 0, launchVel: null, respawnTicks: 0,
     },
-    motes: [], shades: [], lanterns: defaultLanterns(night), drifters: [], charms: [],
+    motes: [], shades: [], lanterns: defaultLanterns(night), drifters: [],
+    charms: cfg.charms.map((c) => ({ id: c.id, pos: [...c.pos] as Vec3, available: true, respawnTicks: 0 })),
     wind: { warning: false, active: false, dirDeg: 0 },
     rngState: seed >>> 0, nextMoteId: 1, nextShadeId: 1, nextDrifterId: 1,
     spawnTicks: cfg.shadeIntervalTicks, spawnEnabled: scenario.random_shades !== false,
-    windEnabled: true, drifterSpawnEnabled: true, moteSpawnEnabled: scenario.random_motes !== false,
+    windEnabled: scenario.wind_enabled !== false, drifterSpawnEnabled: true, moteSpawnEnabled: scenario.random_motes !== false,
     prevButtons: { jump: false, interact: false, pulse: false, dash: false, pause: false },
   };
 
@@ -52,6 +53,16 @@ export function createGame(seed: number, scenario: Scenario = {}, night: NightId
     if (l.pos) target.pos = [...l.pos];
     if (l.deposited !== undefined) target.deposited = l.deposited;
     if (l.lit !== undefined) target.lit = l.lit;
+  }
+
+  if (scenario.charms) {
+    s.charms = scenario.charms.map((c) => {
+      const def = cfg.charms.find((x) => x.id === c.id);
+      const pos = c.pos ?? def?.pos;
+      if (!pos) throw new ScenarioError(`charm needs pos: ${c.id}`);
+      const respawnTicks = c.respawn_ticks ?? 0;
+      return { id: c.id, pos: [...pos] as Vec3, available: c.available ?? respawnTicks === 0, respawnTicks };
+    });
   }
 
   const p = scenario.player;
