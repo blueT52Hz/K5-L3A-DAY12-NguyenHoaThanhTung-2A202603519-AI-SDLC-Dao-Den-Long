@@ -2,7 +2,7 @@ import { InputFormatError } from './errors';
 import type { InputFrame } from '../core/types';
 
 export { InputFormatError };
-const BOOLS = ['jump', 'interact', 'pulse'] as const;
+const BOOLS = ['jump', 'interact', 'pulse', 'dash', 'pause'] as const;
 
 /** Validate the inputs file. Frames must have strictly increasing integer ticks. */
 export function parseInputs(json: unknown): { tick: number; frame: Partial<InputFrame> }[] {
