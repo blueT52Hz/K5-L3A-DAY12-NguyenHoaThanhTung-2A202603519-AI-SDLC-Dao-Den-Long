@@ -13,7 +13,12 @@ Sinh viên: Nguyễn Hoà Thanh Tùng - 2A202603519. Tag nộp bài: `phase-1`, 
 
 ## Video demo
 
-[Xem video demo trên Google Drive](https://drive.google.com/file/d/1cA99tHRh9Qp-5KtF33mhPsXi9QYC-QbG/view?usp=sharing) (3 phút 08 giây, 1280x720, có tiếng). File gốc 144 MB vượt giới hạn 100 MB/file của GitHub nên không commit vào repo.
+[Xem video demo trên Google Drive](https://drive.google.com/file/d/1GY-fwOsiljrYQ28tCmeRnOz_59X2aXrQ/view?usp=drive_link) (4 phút 18 giây, 1280x720, có tiếng).
+
+- 0:00-3:08: chơi thử trên web.
+- 3:08-4:18: bằng chứng chạy lệnh: `npm test` (178/178 pass), headless seed 42, bench 30 giây trên Chrome, soak 10 Đêm (0 crash).
+
+Ghi chú: số bench hiện trong video (avg 73.5 FPS, p1 low 13.8) thấp hơn `bench.json` (100.7 / 33.1) vì lúc quay ffmpeg ghi màn hình chiếm CPU cùng lúc; `bench.json` là lần đo không quay.
 
 ## Yêu cầu hệ thống
 
