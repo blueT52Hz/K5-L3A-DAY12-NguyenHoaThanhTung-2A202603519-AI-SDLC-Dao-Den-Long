@@ -3,7 +3,7 @@
 Game 3D (Three.js + TypeScript): nhặt đom đóm, nạp vào Đèn Lồng Lớn, tránh Bóng Mực và Gió Lạc, giữ đủ đèn sáng (tiếp dầu khi cạn) cho tới bình minh, qua 3 Đêm. Có bảng xếp hạng top 10, đổi phím, chế độ trợ năng, bench và soak test.
 Lõi mô phỏng (`src/core`) là TypeScript thuần, chạy 60 tick/giây, dùng chung cho bản web và chế độ headless (Test Contract v1.3, tất định theo seed).
 
-Sinh viên: Nguyễn Hoà Thanh Tùng - 2A202603519. Tag nộp bài: `phase-1`, `phase-2`, `phase-3`, `phase-4` (kèm GitHub Release `v1.0.0`). Các tài liệu đề lab nằm trong [`lab/`](lab/).
+Sinh viên: Nguyễn Hoa Thanh Tùng - 2A202603519. Tag nộp bài: `phase-1`, `phase-2`, `phase-3`, `phase-4` (kèm GitHub Release `v1.0.0`). Các tài liệu đề lab nằm trong [`lab/`](lab/).
 
 | | |
 |---|---|

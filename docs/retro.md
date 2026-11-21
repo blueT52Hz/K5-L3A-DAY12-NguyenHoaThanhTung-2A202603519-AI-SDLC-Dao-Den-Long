@@ -1,6 +1,6 @@
 # Retro 4 phase - Đảo Đèn Lồng v1.0.0
 
-Tác giả: Nguyễn Hoà Thanh Tùng (2A202603519). Nguồn: `docs/ai-log.md`, `CHANGELOG.md`, lịch sử git (4 tag `phase-1` đến `phase-4`).
+Tác giả: Nguyễn Hoa Thanh Tùng (2A202603519). Nguồn: `docs/ai-log.md`, `CHANGELOG.md`, lịch sử git (4 tag `phase-1` đến `phase-4`).
 
 ## Tổng hợp Evaluation theo phase
 

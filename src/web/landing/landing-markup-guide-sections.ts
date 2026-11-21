@@ -117,7 +117,7 @@ export function guideSectionsMarkup(): string {
 
   <footer class="ln-footer">
     <span>Đảo Đèn Lồng - Đêm 1, Đảo Bến</span>
-    <span>Three.js + TypeScript - Nguyễn Hoà Thanh Tùng</span>
+    <span>Three.js + TypeScript - Nguyễn Hoa Thanh Tùng</span>
     <a href="#top">Lên đầu trang</a>
   </footer>`;
 }

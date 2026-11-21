@@ -5,7 +5,7 @@
 - **Mô hình 3D:** toàn bộ dựng bằng mã từ khối hình học cơ bản của Three.js (Mây, Bóng Mực, Gió Lạc, đèn lồng, đom đóm, bùa, địa hình và đạo cụ đảo): `src/web/models/`, `src/web/decor/`. Không dùng file mô hình hay texture bên ngoài.
 - **Âm thanh:** nhạc nền và hiệu ứng tổng hợp lúc chạy bằng WebAudio (`src/web/audio/`). Không có file âm thanh bên ngoài.
 - **Hình ảnh, bảng màu, chữ:** màu theo bảng của đề; font hệ thống; ảnh trong `docs/screenshots/` và `evidence/` là ảnh chụp từ chính game.
-- **Mã nguồn, scenario, tài liệu:** viết trong repo bởi Nguyễn Hoà Thanh Tùng cùng công cụ AI bên dưới.
+- **Mã nguồn, scenario, tài liệu:** viết trong repo bởi Nguyễn Hoa Thanh Tùng cùng công cụ AI bên dưới.
 
 ## Thư viện
 
